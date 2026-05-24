@@ -1,0 +1,28 @@
+{
+  "name": "crm-omnius-team",
+  "version": "1.0.0",
+  "description": "Internal CRM for omnius.team",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js",
+    "migrate": "node-pg-migrate -m server/migrations up",
+    "migrate:down": "node-pg-migrate -m server/migrations down",
+    "seed": "node server/db/seed.js"
+  },
+  "dependencies": {
+    "connect-pg-simple": "^10.0.0",
+    "dotenv": "^16.5.0",
+    "express": "^4.21.2",
+    "express-async-errors": "^3.1.1",
+    "express-session": "^1.18.1",
+    "multer": "^2.0.0",
+    "node-pg-migrate": "^7.9.1",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "pg": "^8.14.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}

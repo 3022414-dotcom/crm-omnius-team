@@ -89,12 +89,10 @@ CREATE INDEX IDX_session_expire ON session (expire);
 **Участники команды (seed data)**:
 | name | email | role |
 |------|-------|------|
-| Дмитрий Твердохлебов | dmitry@omnius.team | admin |
-| Юлия Шевцова | julia@omnius.team | admin |
+| Дмитрий Твердохлебов | dima@omnius.team | admin |
+| Юлия Шевцова | shevtsova_julia@omnius.team | admin |
 | Анастасия Стефанова | anastasia@omnius.team | bdm |
-| Илья Болховский | ilya@omnius.team | viewer |
-
-> Email-адреса указаны предположительно по паттерну omnius.team. Уточнить перед запуском seed.
+| Илья Болховский | ilya.bolkhovsky@gmail.com | viewer |
 
 **Alternatives considered**: SQL-файл `seed.sql` через psql — возможен, но JS-скрипт удобнее (использует DATABASE_URL из .env автоматически без дополнительных флагов psql).
 
