@@ -65,7 +65,7 @@
 - [x] T020 [US1] Добавить в `up()` миграции `server/migrations/20260524000001_initial_schema.js`: триггеры `set_updated_at` BEFORE UPDATE на таблицы: users, accounts, contacts, deals, notes, activities (через `pgm.sql()` для каждой)
 - [x] T021 [US1] Добавить в `up()` миграции `server/migrations/20260524000001_initial_schema.js`: все индексы — FK-индексы (owner_id, account_id, author_id, uploaded_by, deal_id, contact_id), поисковые (accounts.name, contacts.email, contacts.first_name+last_name), полиморфные ((entity_type, entity_id) для notes, attachments, activities), (deals.stage)
 - [x] T022 [US1] Написать `down()` функцию в `server/migrations/20260524000001_initial_schema.js`: удаление в обратном порядке — индексы → триггеры → session → activities → attachments → notes → deal_contacts → deals → contacts → accounts → users → trigger function → ENUM типы
-- [ ] T023 [US1] Запустить `npm run migrate` и верифицировать: все 9 таблиц присутствуют (`\dt`), ENUM-типы созданы (`\dT`), триггеры активны (`\d users`); **Примечание**: каскадное удаление для полиморфных таблиц (notes/attachments/activities) реализуется на уровне приложения — верификация SC-005 запланирована в F-04
+- [x] T023 [US1] Запустить `npm run migrate` и верифицировать: все 9 таблиц присутствуют (`\dt`), ENUM-типы созданы (`\dT`), триггеры активны (`\d users`); **Примечание**: каскадное удаление для полиморфных таблиц (notes/attachments/activities) реализуется на уровне приложения — верификация SC-005 запланирована в F-04
 
 **Checkpoint**: `npm run migrate` создаёт полную схему. User Story 1 завершена — можно демонстрировать.
 
@@ -81,7 +81,7 @@
 
 - [x] T024 [US2] Создать `server/db/seed.js`: подключение через pool.js, INSERT INTO users (email, name, role) VALUES для 4 участников команды с `ON CONFLICT (email) DO NOTHING`, вывод подтверждения
 - [x] T025 [US2] Использовать подтверждённые email-адреса в `server/db/seed.js`: dima@omnius.team (admin), shevtsova_julia@omnius.team (admin), anastasia@omnius.team (bdm), ilya.bolkhovsky@gmail.com (viewer)
-- [ ] T026 [US2] Запустить `npm run seed` и верифицировать: `SELECT name, role FROM users;` возвращает 4 строки с корректными ролями; повторный запуск не создаёт дублей
+- [x] T026 [US2] Запустить `npm run seed` и верифицировать: `SELECT name, role FROM users;` возвращает 4 строки с корректными ролями; повторный запуск не создаёт дублей
 
 **Checkpoint**: `npm run seed` идемпотентно создаёт 4 участников. User Story 2 завершена.
 
@@ -95,8 +95,8 @@
 
 ### Implementation
 
-- [ ] T027 [US3] Верифицировать tracking-таблицу node-pg-migrate: `SELECT * FROM pgmigrations;` показывает применённую миграцию с именем и датой
-- [ ] T028 [US3] Верифицировать откат и повторное применение: запустить `npm run migrate:down`, убедиться что таблицы удалены; затем `npm run migrate` — схема воссоздана идентично
+- [x] T027 [US3] Верифицировать tracking-таблицу node-pg-migrate: `SELECT * FROM pgmigrations;` показывает применённую миграцию с именем и датой
+- [x] T028 [US3] Верифицировать откат и повторное применение: запустить `npm run migrate:down`, убедиться что таблицы удалены; затем `npm run migrate` — схема воссоздана идентично
 
 **Checkpoint**: Цикл migrate → down → migrate работает без ошибок. User Story 3 завершена.
 
@@ -104,7 +104,7 @@
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T029 [P] Провести полную валидацию по `specs/001-db-schema-migrations/quickstart.md` — пройти все шаги с нуля на чистой БД и убедиться в соответствии
+- [x] T029 [P] Провести полную валидацию по `specs/001-db-schema-migrations/quickstart.md` — пройти все шаги с нуля на чистой БД и убедиться в соответствии
 - [x] T030 [P] Проверить `.env.example` — все переменные из конституции присутствуют, значения-примеры не являются реальными секретами
 
 ---
