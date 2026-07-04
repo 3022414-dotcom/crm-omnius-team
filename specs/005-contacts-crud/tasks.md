@@ -22,7 +22,7 @@
 
 **Purpose**: Новая инфраструктура, нужная всем user stories
 
-- [ ] T001 Create `server/middleware/upload.js` — multer config: `memoryStorage()`, `ALLOWED_MIMETYPES = ['image/jpeg','image/jpg','image/png','image/webp']`, `MAX_SIZE = 5 * 1024 * 1024`, fileFilter по mimetype, экспортировать `{ upload }`
+- [x] T001 Create `server/middleware/upload.js` — multer config: `memoryStorage()`, `ALLOWED_MIMETYPES = ['image/jpeg','image/jpg','image/png','image/webp']`, `MAX_SIZE = 5 * 1024 * 1024`, fileFilter по mimetype, экспортировать `{ upload }`
 
 ---
 
@@ -32,9 +32,9 @@
 
 **⚠️ CRITICAL**: Ни одна user story не начинается до завершения этой фазы
 
-- [ ] T002 Create `server/controllers/contactsController.js` — скелет: импорты `pool`, `path`, `fs`, `{ randomUUID } from 'crypto'`; вспомогательная `savePhoto(contactId, file)` (mkdirSync + writeFile + return path); **НЕ использовать throw в validateAccountId** — вместо этого вынести inline-проверку account_id прямо в createContact/updateContact (паттерн F-04); константы `CONTACT_FIELDS` и `UPDATABLE_FIELDS = ['first_name','last_name','email','phone','position','account_id']`; пустой `module.exports = {}`
-- [ ] T003 Create `server/routes/contacts.js` — скелет: `express.Router()`, импорт `requireRole` из `../middleware/auth`; пустой router, `module.exports = router`
-- [ ] T004 Modify `server/app.js` — добавить `const contactsRouter = require('./routes/contacts')`, `app.use('/api/v1/contacts', contactsRouter)`, `app.use('/uploads', express.static(require('path').join(__dirname, '..', 'uploads')))` (абсолютный путь — устойчив к изменению CWD)
+- [x] T002 Create `server/controllers/contactsController.js` — скелет: импорты `pool`, `path`, `fs`, `{ randomUUID } from 'crypto'`; вспомогательная `savePhoto(contactId, file)` (mkdirSync + writeFile + return path); **НЕ использовать throw в validateAccountId** — вместо этого вынести inline-проверку account_id прямо в createContact/updateContact (паттерн F-04); константы `CONTACT_FIELDS` и `UPDATABLE_FIELDS = ['first_name','last_name','email','phone','position','account_id']`; пустой `module.exports = {}`
+- [x] T003 Create `server/routes/contacts.js` — скелет: `express.Router()`, импорт `requireRole` из `../middleware/auth`; пустой router, `module.exports = router`
+- [x] T004 Modify `server/app.js` — добавить `const contactsRouter = require('./routes/contacts')`, `app.use('/api/v1/contacts', contactsRouter)`, `app.use('/uploads', express.static(require('path').join(__dirname, '..', 'uploads')))` (абсолютный путь — устойчив к изменению CWD)
 
 **Checkpoint**: Сервер запускается без ошибок; `/api/v1/contacts` возвращает пустые ответы (роуты ещё не добавлены)
 
@@ -48,8 +48,8 @@
 
 ### Implementation for User Story 1
 
-- [ ] T005 [US1] Add `createContact` to `server/controllers/contactsController.js` — валидация first_name/last_name (trim, 400 если пустые); inline проверка account_id: `if (account_id) { const {rows} = await pool.query('SELECT id FROM accounts WHERE id=$1',[account_id]); if (!rows[0]) return res.status(400).json({error:'Bad Request',message:'Аккаунт не найден'}); }`; INSERT INTO contacts с owner_id=req.user.id, RETURNING CONTACT_FIELDS, ответ 201; добавить в module.exports
-- [ ] T006 [US1] Add route in `server/routes/contacts.js` — `router.post('/', requireRole(['admin', 'bdm']), createContact)` с импортом createContact
+- [x] T005 [US1] Add `createContact` to `server/controllers/contactsController.js` — валидация first_name/last_name (trim, 400 если пустые); inline проверка account_id: `if (account_id) { const {rows} = await pool.query('SELECT id FROM accounts WHERE id=$1',[account_id]); if (!rows[0]) return res.status(400).json({error:'Bad Request',message:'Аккаунт не найден'}); }`; INSERT INTO contacts с owner_id=req.user.id, RETURNING CONTACT_FIELDS, ответ 201; добавить в module.exports
+- [x] T006 [US1] Add route in `server/routes/contacts.js` — `router.post('/', requireRole(['admin', 'bdm']), createContact)` с импортом createContact
 
 **Checkpoint**: US1 полностью работает — создание контакта, валидация, RBAC
 
@@ -63,11 +63,11 @@
 
 ### Implementation for User Story 2
 
-- [ ] T007 [P] [US2] Add `listContacts` to `server/controllers/contactsController.js` — парсинг page/limit с bounds-check (page≥1, limit≤100), search ILIKE по first_name/last_name/email через `WHERE ($1='' OR (...))`, COUNT запрос для total, возвращает `{data,total,page,limit}`; добавить в module.exports
-- [ ] T008 [P] [US2] Add `getContactById` to `server/controllers/contactsController.js` — `SELECT CONTACT_FIELDS FROM contacts WHERE id=$1`, 404 если не найден; добавить в module.exports
-- [ ] T009 [P] [US2] Add `listContactsByAccount` to `server/controllers/contactsController.js` — сначала проверить существование аккаунта (404 если нет), затем SELECT контактов с `WHERE account_id=$1` + pagination, возвращает envelope `{data,total,page,limit}`; добавить в module.exports
-- [ ] T010 [US2] Add routes in `server/routes/contacts.js` — `router.get('/', listContacts)` и `router.get('/:id', getContactById)` (без ограничений роли — все авторизованные)
-- [ ] T011 [US2] Modify `server/routes/accounts.js` — добавить `const { listContactsByAccount } = require('../controllers/contactsController')`, затем `router.get('/:id/contacts', listContactsByAccount)` **ПЕРЕД** строкой `router.get('/:id', getAccountById)` (важен порядок регистрации!)
+- [x] T007 [P] [US2] Add `listContacts` to `server/controllers/contactsController.js` — парсинг page/limit с bounds-check (page≥1, limit≤100), search ILIKE по first_name/last_name/email через `WHERE ($1='' OR (...))`, COUNT запрос для total, возвращает `{data,total,page,limit}`; добавить в module.exports
+- [x] T008 [P] [US2] Add `getContactById` to `server/controllers/contactsController.js` — `SELECT CONTACT_FIELDS FROM contacts WHERE id=$1`, 404 если не найден; добавить в module.exports
+- [x] T009 [P] [US2] Add `listContactsByAccount` to `server/controllers/contactsController.js` — сначала проверить существование аккаунта (404 если нет), затем SELECT контактов с `WHERE account_id=$1` + pagination, возвращает envelope `{data,total,page,limit}`; добавить в module.exports
+- [x] T010 [US2] Add routes in `server/routes/contacts.js` — `router.get('/', listContacts)` и `router.get('/:id', getContactById)` (без ограничений роли — все авторизованные)
+- [x] T011 [US2] Modify `server/routes/accounts.js` — добавить `const { listContactsByAccount } = require('../controllers/contactsController')`, затем `router.get('/:id/contacts', listContactsByAccount)` **ПЕРЕД** строкой `router.get('/:id', getAccountById)` (важен порядок регистрации!)
 
 **Checkpoint**: US2 полностью работает — глобальный список, поиск, список по аккаунту, просмотр контакта
 
@@ -81,8 +81,8 @@
 
 ### Implementation for User Story 3
 
-- [ ] T012 [US3] Add `updateContact` to `server/controllers/contactsController.js` — динамический SET-clause (итерация по UPDATABLE_FIELDS, только присутствующие в body поля); валидация: если first_name/last_name переданы — не пустые; inline проверка: `if ('account_id' in body && body.account_id) { const {rows} = await pool.query('SELECT id FROM accounts WHERE id=$1',[body.account_id]); if (!rows[0]) return res.status(400).json({error:'Bad Request',message:'Аккаунт не найден'}); }`; пустой body → возвращает текущие данные (200); UPDATE с `updated_at=NOW()`, 404 если не найден; добавить в module.exports
-- [ ] T013 [US3] Add route in `server/routes/contacts.js` — `router.put('/:id', requireRole(['admin', 'bdm']), updateContact)`
+- [x] T012 [US3] Add `updateContact` to `server/controllers/contactsController.js` — динамический SET-clause (итерация по UPDATABLE_FIELDS, только присутствующие в body поля); валидация: если first_name/last_name переданы — не пустые; inline проверка: `if ('account_id' in body && body.account_id) { const {rows} = await pool.query('SELECT id FROM accounts WHERE id=$1',[body.account_id]); if (!rows[0]) return res.status(400).json({error:'Bad Request',message:'Аккаунт не найден'}); }`; пустой body → возвращает текущие данные (200); UPDATE с `updated_at=NOW()`, 404 если не найден; добавить в module.exports
+- [x] T013 [US3] Add route in `server/routes/contacts.js` — `router.put('/:id', requireRole(['admin', 'bdm']), updateContact)`
 
 **Checkpoint**: US3 полностью работает — partial update, валидация, RBAC
 
@@ -96,9 +96,9 @@
 
 ### Implementation for User Story 4
 
-- [ ] T014 [P] [US4] Add `uploadContactPhoto` to `server/controllers/contactsController.js` — проверить req.file (400 если нет), SELECT photo_path; 404 если контакт не найден; unlink старого файла если был (`catch(()=>{})`); вызвать savePhoto(); UPDATE photo_path + updated_at; ответ `{photo_url: '/'+newPath}`; добавить в module.exports
-- [ ] T015 [P] [US4] Add `deleteContactPhoto` to `server/controllers/contactsController.js` — SELECT photo_path; 404 если контакт не найден; если photo_path — unlink (`catch(()=>{})`); UPDATE photo_path=null + updated_at; ответ `{}`; добавить в module.exports
-- [ ] T016 [US4] Add photo routes in `server/routes/contacts.js` — добавить импорт `{ upload }` из `../middleware/upload` и импорт uploadContactPhoto/deleteContactPhoto; `router.post('/:id/photo', requireRole(['admin','bdm']), (req,res,next) => { upload.single('photo')(req,res,(err) => { if(err instanceof multer.MulterError && err.code==='LIMIT_FILE_SIZE') return res.status(413)...; if(err?.message==='INVALID_FILE_TYPE') return res.status(400)...; if(err) return next(err); uploadContactPhoto(req,res,next); }); })` и `router.delete('/:id/photo', requireRole(['admin','bdm']), deleteContactPhoto)` — добавить импорт multer
+- [x] T014 [P] [US4] Add `uploadContactPhoto` to `server/controllers/contactsController.js` — проверить req.file (400 если нет), SELECT photo_path; 404 если контакт не найден; unlink старого файла если был (`catch(()=>{})`); вызвать savePhoto(); UPDATE photo_path + updated_at; ответ `{photo_url: '/'+newPath}`; добавить в module.exports
+- [x] T015 [P] [US4] Add `deleteContactPhoto` to `server/controllers/contactsController.js` — SELECT photo_path; 404 если контакт не найден; если photo_path — unlink (`catch(()=>{})`); UPDATE photo_path=null + updated_at; ответ `{}`; добавить в module.exports
+- [x] T016 [US4] Add photo routes in `server/routes/contacts.js` — добавить импорт `{ upload }` из `../middleware/upload` и импорт uploadContactPhoto/deleteContactPhoto; `router.post('/:id/photo', requireRole(['admin','bdm']), (req,res,next) => { upload.single('photo')(req,res,(err) => { if(err instanceof multer.MulterError && err.code==='LIMIT_FILE_SIZE') return res.status(413)...; if(err?.message==='INVALID_FILE_TYPE') return res.status(400)...; if(err) return next(err); uploadContactPhoto(req,res,next); }); })` и `router.delete('/:id/photo', requireRole(['admin','bdm']), deleteContactPhoto)` — добавить импорт multer
 
 **Checkpoint**: US4 полностью работает — загрузка/замена/удаление фото, ограничения формата и размера
 
@@ -112,8 +112,8 @@
 
 ### Implementation for User Story 5
 
-- [ ] T017 [US5] Add `deleteContact` to `server/controllers/contactsController.js` — SELECT photo_path (404 если не найден); явно удалить полиморфные записи (паттерн F-04 deleteAccount): `DELETE FROM activities WHERE entity_type='contact' AND entity_id=$1`, `DELETE FROM attachments WHERE entity_type='contact' AND entity_id=$1`, `DELETE FROM notes WHERE entity_type='contact' AND entity_id=$1`; затем `DELETE FROM contacts WHERE id=$1` (DB CASCADE удаляет deal_contacts); после успешного DELETE: если photo_path был — unlink (`catch(()=>{})`); ответ 204; добавить в module.exports
-- [ ] T018 [US5] Add route in `server/routes/contacts.js` — `router.delete('/:id', requireRole(['admin']), deleteContact)`
+- [x] T017 [US5] Add `deleteContact` to `server/controllers/contactsController.js` — SELECT photo_path (404 если не найден); явно удалить полиморфные записи (паттерн F-04 deleteAccount): `DELETE FROM activities WHERE entity_type='contact' AND entity_id=$1`, `DELETE FROM attachments WHERE entity_type='contact' AND entity_id=$1`, `DELETE FROM notes WHERE entity_type='contact' AND entity_id=$1`; затем `DELETE FROM contacts WHERE id=$1` (DB CASCADE удаляет deal_contacts); после успешного DELETE: если photo_path был — unlink (`catch(()=>{})`); ответ 204; добавить в module.exports
+- [x] T018 [US5] Add route in `server/routes/contacts.js` — `router.delete('/:id', requireRole(['admin']), deleteContact)`
 
 **Checkpoint**: US5 полностью работает — удаление с каскадом и очисткой файла
 
@@ -123,7 +123,7 @@
 
 **Purpose**: Доработки, затрагивающие несколько user stories
 
-- [ ] T019 Verify `.gitignore` в корне репозитория содержит `uploads/` — добавить если отсутствует
+- [x] T019 Verify `.gitignore` в корне репозитория содержит `uploads/` — добавить если отсутствует
 - [ ] T020 Manual quickstart.md validation — прогнать сценарии §1–§6 из `specs/005-contacts-crud/quickstart.md` через curl; отметить результаты
 
 ---

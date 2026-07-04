@@ -1,10 +1,12 @@
 const express = require('express');
 const { requireRole } = require('../middleware/auth');
 const { createAccount, listAccounts, getAccountById, updateAccount, deleteAccount } = require('../controllers/accountsController');
+const { listContactsByAccount } = require('../controllers/contactsController');
 
 const router = express.Router();
 
 router.get('/', listAccounts);
+router.get('/:id/contacts', listContactsByAccount);
 router.get('/:id', getAccountById);
 router.post('/', requireRole(['admin', 'bdm']), createAccount);
 router.put('/:id', requireRole(['admin', 'bdm']), updateAccount);

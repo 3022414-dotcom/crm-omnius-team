@@ -5,9 +5,11 @@ const passport = require('passport');
 const { Strategy: GoogleStrategy } = require('passport-google-oauth20');
 const pool = require('./db/pool');
 const { ensureAuthenticated } = require('./middleware/auth');
+const path = require('path');
 const authRouter = require('./routes/auth');
 const usersRouter = require('./routes/users');
 const accountsRouter = require('./routes/accounts');
+const contactsRouter = require('./routes/contacts');
 
 const PgSession = require('connect-pg-simple')(session);
 
@@ -71,9 +73,12 @@ passport.deserializeUser(async (id, done) => {
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+
 app.use('/api/v1', ensureAuthenticated);
 app.use('/api/v1/users', usersRouter);
 app.use('/api/v1/accounts', accountsRouter);
+app.use('/api/v1/contacts', contactsRouter);
 
 app.use('/', authRouter);
 
