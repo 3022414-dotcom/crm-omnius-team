@@ -32,9 +32,9 @@
 
 **⚠️ CRITICAL**: Ни одна user story не начинается до завершения этой фазы
 
-- [ ] T002 Create `server/controllers/contactsController.js` — скелет: импорты `pool`, `path`, `fs`, `{ randomUUID } from 'crypto'`; вспомогательные функции `validateAccountId(accountId)` (SELECT из accounts, throw 400 если не найден) и `savePhoto(contactId, file)` (mkdirSync + writeFile + return path); константы `CONTACT_FIELDS` и `UPDATABLE_FIELDS = ['first_name','last_name','email','phone','position','account_id']`; пустой `module.exports = {}`
+- [ ] T002 Create `server/controllers/contactsController.js` — скелет: импорты `pool`, `path`, `fs`, `{ randomUUID } from 'crypto'`; вспомогательная `savePhoto(contactId, file)` (mkdirSync + writeFile + return path); **НЕ использовать throw в validateAccountId** — вместо этого вынести inline-проверку account_id прямо в createContact/updateContact (паттерн F-04); константы `CONTACT_FIELDS` и `UPDATABLE_FIELDS = ['first_name','last_name','email','phone','position','account_id']`; пустой `module.exports = {}`
 - [ ] T003 Create `server/routes/contacts.js` — скелет: `express.Router()`, импорт `requireRole` из `../middleware/auth`; пустой router, `module.exports = router`
-- [ ] T004 Modify `server/app.js` — добавить `const contactsRouter = require('./routes/contacts')`, `app.use('/api/v1/contacts', contactsRouter)`, `app.use('/uploads', express.static('uploads'))` (отдача файлов фото как статики)
+- [ ] T004 Modify `server/app.js` — добавить `const contactsRouter = require('./routes/contacts')`, `app.use('/api/v1/contacts', contactsRouter)`, `app.use('/uploads', express.static(require('path').join(__dirname, '..', 'uploads')))` (абсолютный путь — устойчив к изменению CWD)
 
 **Checkpoint**: Сервер запускается без ошибок; `/api/v1/contacts` возвращает пустые ответы (роуты ещё не добавлены)
 
@@ -48,7 +48,7 @@
 
 ### Implementation for User Story 1
 
-- [ ] T005 [US1] Add `createContact` to `server/controllers/contactsController.js` — валидация first_name/last_name (trim, 400 если пустые), вызов `validateAccountId(account_id)` если передан, INSERT INTO contacts с owner_id=req.user.id, RETURNING CONTACT_FIELDS, ответ 201; добавить в module.exports
+- [ ] T005 [US1] Add `createContact` to `server/controllers/contactsController.js` — валидация first_name/last_name (trim, 400 если пустые); inline проверка account_id: `if (account_id) { const {rows} = await pool.query('SELECT id FROM accounts WHERE id=$1',[account_id]); if (!rows[0]) return res.status(400).json({error:'Bad Request',message:'Аккаунт не найден'}); }`; INSERT INTO contacts с owner_id=req.user.id, RETURNING CONTACT_FIELDS, ответ 201; добавить в module.exports
 - [ ] T006 [US1] Add route in `server/routes/contacts.js` — `router.post('/', requireRole(['admin', 'bdm']), createContact)` с импортом createContact
 
 **Checkpoint**: US1 полностью работает — создание контакта, валидация, RBAC
@@ -81,7 +81,7 @@
 
 ### Implementation for User Story 3
 
-- [ ] T012 [US3] Add `updateContact` to `server/controllers/contactsController.js` — динамический SET-clause (итерация по UPDATABLE_FIELDS, только присутствующие в body поля), валидация: если first_name/last_name переданы — не пустые; если account_id передан и не null — validateAccountId(); пустой body → возвращает текущие данные (200); UPDATE с `updated_at=NOW()`, 404 если не найден; добавить в module.exports
+- [ ] T012 [US3] Add `updateContact` to `server/controllers/contactsController.js` — динамический SET-clause (итерация по UPDATABLE_FIELDS, только присутствующие в body поля); валидация: если first_name/last_name переданы — не пустые; inline проверка: `if ('account_id' in body && body.account_id) { const {rows} = await pool.query('SELECT id FROM accounts WHERE id=$1',[body.account_id]); if (!rows[0]) return res.status(400).json({error:'Bad Request',message:'Аккаунт не найден'}); }`; пустой body → возвращает текущие данные (200); UPDATE с `updated_at=NOW()`, 404 если не найден; добавить в module.exports
 - [ ] T013 [US3] Add route in `server/routes/contacts.js` — `router.put('/:id', requireRole(['admin', 'bdm']), updateContact)`
 
 **Checkpoint**: US3 полностью работает — partial update, валидация, RBAC
@@ -112,7 +112,7 @@
 
 ### Implementation for User Story 5
 
-- [ ] T017 [US5] Add `deleteContact` to `server/controllers/contactsController.js` — SELECT photo_path (404 если не найден); DELETE FROM contacts WHERE id=$1 (DB CASCADE удаляет deal_contacts); после успешного DELETE: если photo_path был — unlink (`catch(()=>{})`); ответ 204; добавить в module.exports
+- [ ] T017 [US5] Add `deleteContact` to `server/controllers/contactsController.js` — SELECT photo_path (404 если не найден); явно удалить полиморфные записи (паттерн F-04 deleteAccount): `DELETE FROM activities WHERE entity_type='contact' AND entity_id=$1`, `DELETE FROM attachments WHERE entity_type='contact' AND entity_id=$1`, `DELETE FROM notes WHERE entity_type='contact' AND entity_id=$1`; затем `DELETE FROM contacts WHERE id=$1` (DB CASCADE удаляет deal_contacts); после успешного DELETE: если photo_path был — unlink (`catch(()=>{})`); ответ 204; добавить в module.exports
 - [ ] T018 [US5] Add route in `server/routes/contacts.js` — `router.delete('/:id', requireRole(['admin']), deleteContact)`
 
 **Checkpoint**: US5 полностью работает — удаление с каскадом и очисткой файла
