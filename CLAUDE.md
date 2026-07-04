@@ -63,5 +63,5 @@
 Фронтенд не выбран — зафиксировать до F-04 (Next.js или React+Vite).
 
 <!-- SPECKIT START -->
-**Active feature plan**: [specs/003-roles-access/plan.md](specs/003-roles-access/plan.md)
+**Active feature plan**: [specs/004-accounts-crud/plan.md](specs/004-accounts-crud/plan.md)
 <!-- SPECKIT END -->
