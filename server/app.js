@@ -1,3 +1,4 @@
+require('express-async-errors');
 const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
@@ -5,10 +6,14 @@ const { Strategy: GoogleStrategy } = require('passport-google-oauth20');
 const pool = require('./db/pool');
 const { ensureAuthenticated } = require('./middleware/auth');
 const authRouter = require('./routes/auth');
+const usersRouter = require('./routes/users');
 
 const PgSession = require('connect-pg-simple')(session);
 
 const app = express();
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 app.use(session({
   store: new PgSession({ pool, tableName: 'session' }),
@@ -66,6 +71,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/api/v1', ensureAuthenticated);
+app.use('/api/v1/users', usersRouter);
 
 app.use('/', authRouter);
 

@@ -3,4 +3,13 @@ function ensureAuthenticated(req, res, next) {
   res.status(401).json({ error: 'Unauthorized' });
 }
 
-module.exports = { ensureAuthenticated };
+function requireRole(allowedRoles) {
+  return (req, res, next) => {
+    if (!req.user || !allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({ error: 'Forbidden', message: 'Недостаточно прав для выполнения операции' });
+    }
+    next();
+  };
+}
+
+module.exports = { ensureAuthenticated, requireRole };
