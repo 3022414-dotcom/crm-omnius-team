@@ -7,6 +7,7 @@ const pool = require('./db/pool');
 const { ensureAuthenticated } = require('./middleware/auth');
 const authRouter = require('./routes/auth');
 const usersRouter = require('./routes/users');
+const accountsRouter = require('./routes/accounts');
 
 const PgSession = require('connect-pg-simple')(session);
 
@@ -72,6 +73,7 @@ app.use(passport.session());
 
 app.use('/api/v1', ensureAuthenticated);
 app.use('/api/v1/users', usersRouter);
+app.use('/api/v1/accounts', accountsRouter);
 
 app.use('/', authRouter);
 
