@@ -19,7 +19,7 @@
 
 **Purpose**: Базовая инфраструктура для парсинга тел запросов — требуется для PATCH endpoint.
 
-- [ ] T001 Добавить `express.json()` и `express.urlencoded({ extended: false })` в server/app.js перед middleware `/api/v1`
+- [x] T001 Добавить `express.json()` и `express.urlencoded({ extended: false })` в server/app.js перед middleware `/api/v1`
 
 **Checkpoint**: Body parsing работает — PATCH /api/v1/users/:id/role может читать `req.body.role`
 
@@ -31,7 +31,7 @@
 
 **⚠️ CRITICAL**: Ни одна User Story не может быть проверена до завершения этой фазы.
 
-- [ ] T002 Добавить функцию `requireRole(allowedRoles)` в server/middleware/auth.js и добавить её в `module.exports` рядом с `ensureAuthenticated`
+- [x] T002 Добавить функцию `requireRole(allowedRoles)` в server/middleware/auth.js и добавить её в `module.exports` рядом с `ensureAuthenticated`
 
   Функция возвращает middleware: если `req.user.role` не входит в `allowedRoles` → `res.status(403).json({ error: 'Forbidden', message: 'Недостаточно прав для выполнения операции' })`, иначе `next()`.
 
@@ -47,9 +47,9 @@
 
 ### Implementation
 
-- [ ] T003 [US5] Создать server/controllers/usersController.js с функцией `getMe(req, res)` — возвращает `{ id, name, email, role, created_at }` из `req.user` (поле `google_id` не включать)
-- [ ] T004 [US5] Создать server/routes/users.js с маршрутом `GET /me` (без `requireRole` — `ensureAuthenticated` из app.js уже применён к `/api/v1`)
-- [ ] T005 [US5] Подключить users router в server/app.js: `app.use('/api/v1/users', usersRouter)` — добавить после строки `app.use('/api/v1', ensureAuthenticated)`
+- [x] T003 [US5] Создать server/controllers/usersController.js с функцией `getMe(req, res)` — возвращает `{ id, name, email, role, created_at }` из `req.user` (поле `google_id` не включать)
+- [x] T004 [US5] Создать server/routes/users.js с маршрутом `GET /me` (без `requireRole` — `ensureAuthenticated` из app.js уже применён к `/api/v1`)
+- [x] T005 [US5] Подключить users router в server/app.js: `app.use('/api/v1/users', usersRouter)` — добавить после строки `app.use('/api/v1', ensureAuthenticated)`
 
 **Checkpoint**: GET /api/v1/users/me → 200 для admin, bdm, viewer; 401 для неавторизованных. US5 выполнена.
 
@@ -65,10 +65,10 @@
 
 ### Implementation
 
-- [ ] T006 [P] [US3] Добавить функцию `listUsers(req, res)` в server/controllers/usersController.js — `SELECT id, name, email, role, created_at FROM users ORDER BY name`; возвращает массив
-- [ ] T007 [P] [US3] Добавить функцию `getUserById(req, res)` в server/controllers/usersController.js — `SELECT id, name, email, role, created_at FROM users WHERE id = $1`; возвращает 404 если не найден
-- [ ] T008 [US3] Добавить в server/routes/users.js маршрут `GET /` с `requireRole(['admin'])` — подключить `listUsers` контроллер (регистрировать ПОСЛЕ маршрута `/me`)
-- [ ] T009 [US3] Добавить в server/routes/users.js маршрут `GET /:id` с `requireRole(['admin'])` — подключить `getUserById` контроллер
+- [x] T006 [P] [US3] Добавить функцию `listUsers(req, res)` в server/controllers/usersController.js — `SELECT id, name, email, role, created_at FROM users ORDER BY name`; возвращает массив
+- [x] T007 [P] [US3] Добавить функцию `getUserById(req, res)` в server/controllers/usersController.js — `SELECT id, name, email, role, created_at FROM users WHERE id = $1`; возвращает 404 если не найден
+- [x] T008 [US3] Добавить в server/routes/users.js маршрут `GET /` с `requireRole(['admin'])` — подключить `listUsers` контроллер (регистрировать ПОСЛЕ маршрута `/me`)
+- [x] T009 [US3] Добавить в server/routes/users.js маршрут `GET /:id` с `requireRole(['admin'])` — подключить `getUserById` контроллер
 
 **Checkpoint**: Весь набор маршрутов работает согласно матрице доступа. US1, US2 и US3 выполнены.
 
@@ -85,13 +85,13 @@
 
 ### Implementation
 
-- [ ] T010 [US4] Добавить функцию `updateUserRole(req, res)` в server/controllers/usersController.js со следующей логикой:
+- [x] T010 [US4] Добавить функцию `updateUserRole(req, res)` в server/controllers/usersController.js со следующей логикой:
   1. Валидация: `role` из `req.body` должен быть одним из `['admin', 'bdm', 'viewer']` → иначе 400 `{ error: 'Bad Request', message: 'Недопустимое значение роли. Допустимые значения: admin, bdm, viewer' }`
   2. Self-role guard: если `req.user.id === req.params.id` → 403 `{ error: 'Forbidden', message: 'Нельзя изменить собственную роль' }`
   3. Last-admin guard: если целевой пользователь — admin, выполнить `SELECT COUNT(*) FROM users WHERE role = 'admin'`; если count = 1 → 403 `{ error: 'Forbidden', message: 'Невозможно изменить роль единственного администратора' }`
   4. Обновление: `UPDATE users SET role = $1 WHERE id = $2 RETURNING id, name, email, role, created_at`; если не найден → 404; иначе → 200 с обновлённым объектом
 
-- [ ] T011 [US4] Добавить в server/routes/users.js маршрут `PATCH /:id/role` с `requireRole(['admin'])` — подключить `updateUserRole` контроллер
+- [x] T011 [US4] Добавить в server/routes/users.js маршрут `PATCH /:id/role` с `requireRole(['admin'])` — подключить `updateUserRole` контроллер
 
 **Checkpoint**: Все 4 сценария из quickstart.md §3-5 работают корректно. US4 выполнена.
 
@@ -101,7 +101,7 @@
 
 **Purpose**: Финальная проверка и документация.
 
-- [ ] T012 [P] Убедиться, что в server/routes/users.js маршрут `GET /me` зарегистрирован РАНЬШЕ `GET /:id` (иначе Express перехватит 'me' как :id параметр)
+- [x] T012 [P] Убедиться, что в server/routes/users.js маршрут `GET /me` зарегистрирован РАНЬШЕ `GET /:id` (иначе Express перехватит 'me' как :id параметр)
 - [ ] T013 [P] Пройти все 7 сценариев из specs/003-roles-access/quickstart.md и убедиться в корректности ответов
 
 ---
