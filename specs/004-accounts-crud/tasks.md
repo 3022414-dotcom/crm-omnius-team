@@ -19,9 +19,9 @@
 
 **Purpose**: Создать файловую структуру F-04 и подключить роутер — без этого ни одна User Story не может быть проверена.
 
-- [ ] T001 Создать server/controllers/accountsController.js: `const pool = require('../db/pool');` вверху; в конце `module.exports = {};` (будет заполняться по мере добавления функций)
-- [ ] T002 [P] Создать server/routes/accounts.js: `const express = require('express');`, `const { requireRole } = require('../middleware/auth');`, `const router = express.Router();`, в конце `module.exports = router;` (роуты добавятся в фазах US)
-- [ ] T003 Обновить server/app.js: добавить `const accountsRouter = require('./routes/accounts');` после строки с usersRouter; добавить `app.use('/api/v1/accounts', accountsRouter);` сразу после строки `app.use('/api/v1/users', usersRouter)`
+- [x] T001 Создать server/controllers/accountsController.js: `const pool = require('../db/pool');` вверху; в конце `module.exports = {};` (будет заполняться по мере добавления функций)
+- [x] T002 [P] Создать server/routes/accounts.js: `const express = require('express');`, `const { requireRole } = require('../middleware/auth');`, `const router = express.Router();`, в конце `module.exports = router;` (роуты добавятся в фазах US)
+- [x] T003 Обновить server/app.js: добавить `const accountsRouter = require('./routes/accounts');` после строки с usersRouter; добавить `app.use('/api/v1/accounts', accountsRouter);` сразу после строки `app.use('/api/v1/users', usersRouter)`
 
 **Checkpoint**: `node server/index.js` (или аналог) стартует без ошибок. GET /api/v1/accounts возвращает 401 (без auth) или пустой ответ (нет роутов ещё).
 
@@ -41,14 +41,14 @@
 
 ### Implementation
 
-- [ ] T004 [US1] Добавить функцию `createAccount(req, res)` в server/controllers/accountsController.js со следующей логикой:
+- [x] T004 [US1] Добавить функцию `createAccount(req, res)` в server/controllers/accountsController.js со следующей логикой:
   1. Валидация: если `!req.body.name || !req.body.name.trim()` → `res.status(400).json({ error: 'Bad Request', message: 'Поле name обязательно' })`
   2. Деструктурировать из `req.body`: `const { name, industry, website, phone, address, notes } = req.body`
   3. Выполнить: `INSERT INTO accounts (name, industry, website, phone, address, notes, owner_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, name, industry, website, phone, address, notes, owner_id, created_at, updated_at`; параметры: `[name.trim(), industry||null, website||null, phone||null, address||null, notes||null, req.user.id]`
   4. Вернуть `res.status(201).json(rows[0])`
   5. Обновить `module.exports = { createAccount }` внизу файла
 
-- [ ] T005 [US1] Добавить маршрут в server/routes/accounts.js:
+- [x] T005 [US1] Добавить маршрут в server/routes/accounts.js:
   `router.post('/', requireRole(['admin', 'bdm']), createAccount);`
   Добавить импорт: `const { createAccount } = require('../controllers/accountsController');`
 
@@ -64,20 +64,20 @@
 
 ### Implementation
 
-- [ ] T006 [P] [US2] Добавить функцию `listAccounts(req, res)` в server/controllers/accountsController.js:
+- [x] T006 [P] [US2] Добавить функцию `listAccounts(req, res)` в server/controllers/accountsController.js:
   1. Парсить query: `let page = parseInt(req.query.page) || 1; if (page < 1) page = 1;`; `let limit = parseInt(req.query.limit) || 20; if (limit > 100) limit = 100; if (limit < 1) limit = 1;`; `const search = (req.query.search || '').trim();`; `const offset = (page - 1) * limit;`
   2. SQL данных: `SELECT a.id, a.name, a.industry, a.website, a.phone, a.address, a.notes, a.owner_id, a.created_at, a.updated_at, (SELECT COUNT(*)::int FROM contacts WHERE account_id = a.id) AS "contactsCount", (SELECT COUNT(*)::int FROM deals WHERE account_id = a.id) AS "dealsCount" FROM accounts a WHERE ($1 = '' OR a.name ILIKE '%' || $1 || '%') ORDER BY a.created_at DESC LIMIT $2 OFFSET $3`; параметры: `[search, limit, offset]`
   3. SQL для total: `SELECT COUNT(*)::int AS total FROM accounts WHERE ($1 = '' OR name ILIKE '%' || $1 || '%')`; параметры: `[search]`
   4. Вернуть: `res.json({ data: rows, total: countRows[0].total, page, limit })`
   5. Обновить `module.exports = { createAccount, listAccounts }` внизу файла
 
-- [ ] T007 [P] [US2] Добавить функцию `getAccountById(req, res)` в server/controllers/accountsController.js:
+- [x] T007 [P] [US2] Добавить функцию `getAccountById(req, res)` в server/controllers/accountsController.js:
   1. SQL: `SELECT a.id, a.name, a.industry, a.website, a.phone, a.address, a.notes, a.owner_id, a.created_at, a.updated_at, (SELECT COUNT(*)::int FROM contacts WHERE account_id = a.id) AS "contactsCount", (SELECT COUNT(*)::int FROM deals WHERE account_id = a.id) AS "dealsCount" FROM accounts a WHERE a.id = $1`; параметры: `[req.params.id]`
   2. Если `!rows[0]` → `res.status(404).json({ error: 'Not Found' })`
   3. Иначе → `res.json(rows[0])`
   4. Обновить `module.exports = { createAccount, listAccounts, getAccountById }` внизу файла
 
-- [ ] T008 [US2] Добавить маршруты в server/routes/accounts.js (T008 после T006 и T007):
+- [x] T008 [US2] Добавить маршруты в server/routes/accounts.js (T008 после T006 и T007):
   ```js
   router.get('/', listAccounts);
   router.get('/:id', getAccountById);
@@ -96,7 +96,7 @@
 
 ### Implementation
 
-- [ ] T009 [US3] Добавить функцию `updateAccount(req, res)` в server/controllers/accountsController.js:
+- [x] T009 [US3] Добавить функцию `updateAccount(req, res)` в server/controllers/accountsController.js:
   1. Константа допустимых полей: `const UPDATABLE_FIELDS = ['name', 'industry', 'website', 'phone', 'address', 'notes'];`
   2. Валидация name если передан: `if ('name' in req.body && (!req.body.name || !req.body.name.trim())) return res.status(400).json({ error: 'Bad Request', message: 'Поле name не может быть пустым' });`
   3. Собрать SET-clause: `const updates = []; const values = []; let idx = 1; for (const field of UPDATABLE_FIELDS) { if (field in req.body) { updates.push(\`${field} = $${idx++}\`); values.push(field === 'name' ? req.body[field].trim() : req.body[field]); } }`
@@ -104,7 +104,7 @@
   5. Если есть обновления: `updates.push(\`updated_at = NOW()\`); values.push(req.params.id);` → `UPDATE accounts SET ${updates.join(', ')} WHERE id = $${idx} RETURNING id, name, industry, website, phone, address, notes, owner_id, created_at, updated_at`; если `!rows[0]` → 404; иначе → 200
   6. Обновить `module.exports = { createAccount, listAccounts, getAccountById, updateAccount }` внизу файла
 
-- [ ] T010 [US3] Добавить маршрут в server/routes/accounts.js:
+- [x] T010 [US3] Добавить маршрут в server/routes/accounts.js:
   `router.put('/:id', requireRole(['admin', 'bdm']), updateAccount);`
   Обновить import: добавить `updateAccount` в деструктуризацию
 
@@ -120,7 +120,7 @@
 
 ### Implementation
 
-- [ ] T011 [US4] Добавить функцию `deleteAccount(req, res)` в server/controllers/accountsController.js — реализовать в транзакции:
+- [x] T011 [US4] Добавить функцию `deleteAccount(req, res)` в server/controllers/accountsController.js — реализовать в транзакции:
   1. `const client = await pool.connect();` затем `try { await client.query('BEGIN');`
   2. Проверить существование: `SELECT id FROM accounts WHERE id = $1`; если `!rows[0]` → `await client.query('ROLLBACK'); client.release(); return res.status(404).json({ error: 'Not Found' });`
   3. Удалить полиморфные объекты связанных сделок (activities, attachments, notes) WHERE entity_type = 'deal' AND entity_id IN (SELECT id FROM deals WHERE account_id = $1)`:
@@ -141,7 +141,7 @@
   8. В `catch (err)`: `await client.query('ROLLBACK'); client.release(); throw err;`
   9. Обновить `module.exports = { createAccount, listAccounts, getAccountById, updateAccount, deleteAccount }` внизу файла
 
-- [ ] T012 [US4] Добавить маршрут в server/routes/accounts.js:
+- [x] T012 [US4] Добавить маршрут в server/routes/accounts.js:
   `router.delete('/:id', requireRole(['admin']), deleteAccount);`
   Обновить import: добавить `deleteAccount` в деструктуризацию
 
@@ -153,8 +153,8 @@
 
 **Purpose**: Финальная проверка и квикстарт.
 
-- [ ] T013 [P] Убедиться, что в server/routes/accounts.js маршруты зарегистрированы в правильном порядке: `GET /` → `GET /:id` → `POST /` → `PUT /:id` → `DELETE /:id` (UUID-идентификаторы не конфликтуют со статическими сегментами, но порядок важен для читаемости и будущих расширений)
-- [ ] T014 [P] Пройти все сценарии из specs/004-accounts-crud/quickstart.md (§1–§6) и убедиться в корректности всех ответов
+- [x] T013 [P] Убедиться, что в server/routes/accounts.js маршруты зарегистрированы в правильном порядке: `GET /` → `GET /:id` → `POST /` → `PUT /:id` → `DELETE /:id` (UUID-идентификаторы не конфликтуют со статическими сегментами, но порядок важен для читаемости и будущих расширений)
+- [ ] T014 [P] Пройти все сценарии из specs/004-accounts-crud/quickstart.md (ручная проверка — требует запущенного сервера) (§1–§6) и убедиться в корректности всех ответов
 
 ---
 
