@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const pool = require('../db/pool');
 
 const ACCOUNT_FIELDS = 'id, name, industry, website, phone, address, notes, owner_id, created_at, updated_at';
@@ -119,6 +121,14 @@ async function deleteAccount(req, res) {
        AND entity_id IN (SELECT id FROM deals WHERE account_id = $1)`,
       [id]
     );
+    const { rows: dealAtts } = await client.query(
+      `SELECT file_path FROM attachments WHERE entity_type = 'deal'
+       AND entity_id IN (SELECT id FROM deals WHERE account_id = $1)`,
+      [id]
+    );
+    for (const att of dealAtts) {
+      try { fs.unlinkSync(path.join(__dirname, '../../', att.file_path)); } catch (e) {}
+    }
     await client.query(
       `DELETE FROM attachments WHERE entity_type = 'deal'
        AND entity_id IN (SELECT id FROM deals WHERE account_id = $1)`,
@@ -132,6 +142,13 @@ async function deleteAccount(req, res) {
 
     // Удалить полиморфные объекты самого аккаунта
     await client.query(`DELETE FROM activities WHERE entity_type = 'account' AND entity_id = $1`, [id]);
+    const { rows: acctAtts } = await client.query(
+      `SELECT file_path FROM attachments WHERE entity_type = 'account' AND entity_id = $1`,
+      [id]
+    );
+    for (const att of acctAtts) {
+      try { fs.unlinkSync(path.join(__dirname, '../../', att.file_path)); } catch (e) {}
+    }
     await client.query(`DELETE FROM attachments WHERE entity_type = 'account' AND entity_id = $1`, [id]);
     await client.query(`DELETE FROM notes WHERE entity_type = 'account' AND entity_id = $1`, [id]);
 

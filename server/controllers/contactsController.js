@@ -207,6 +207,13 @@ async function deleteContact(req, res) {
   const photoPath = rows[0].photo_path;
 
   await pool.query(`DELETE FROM activities   WHERE entity_type = 'contact' AND entity_id = $1`, [id]);
+  const { rows: contactAtts } = await pool.query(
+    `SELECT file_path FROM attachments WHERE entity_type = 'contact' AND entity_id = $1`,
+    [id]
+  );
+  for (const att of contactAtts) {
+    try { fs.unlinkSync(path.join(__dirname, '../../', att.file_path)); } catch (e) {}
+  }
   await pool.query(`DELETE FROM attachments  WHERE entity_type = 'contact' AND entity_id = $1`, [id]);
   await pool.query(`DELETE FROM notes        WHERE entity_type = 'contact' AND entity_id = $1`, [id]);
   await pool.query('DELETE FROM contacts WHERE id = $1', [id]);
