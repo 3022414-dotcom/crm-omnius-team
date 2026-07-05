@@ -237,4 +237,71 @@ async function deleteDeal(req, res) {
   return res.status(204).send();
 }
 
-module.exports = { createDeal, listDeals, getDealById, updateDeal, linkContact, unlinkContact, deleteDeal };
+async function getKanbanDeals(req, res) {
+  const owner_id = req.query.owner_id || null;
+  const { rows } = await pool.query(
+    `SELECT d.id, d.title, d.value, d.stage, d.close_date,
+            a.name AS account_name,
+            u.id AS owner_uid, u.name AS owner_name,
+            COUNT(dc.contact_id)::int AS contacts_count
+     FROM deals d
+     LEFT JOIN users u ON d.owner_id = u.id
+     LEFT JOIN accounts a ON d.account_id = a.id
+     LEFT JOIN deal_contacts dc ON dc.deal_id = d.id
+     WHERE ($1::uuid IS NULL OR d.owner_id = $1::uuid)
+     GROUP BY d.id, d.title, d.value, d.stage, d.close_date, a.name, u.id, u.name
+     ORDER BY d.created_at DESC`,
+    [owner_id]
+  );
+  const board = Object.fromEntries(VALID_STAGES.map(s => [s, []]));
+  for (const row of rows) {
+    board[row.stage].push({
+      id: row.id,
+      title: row.title,
+      value: row.value,
+      account: row.account_name ? { name: row.account_name } : null,
+      owner: { id: row.owner_uid, name: row.owner_name },
+      close_date: row.close_date,
+      contacts_count: row.contacts_count,
+    });
+  }
+  return res.json(board);
+}
+
+async function updateDealStage(req, res) {
+  const { stage } = req.body;
+  if (!stage || !VALID_STAGES.includes(stage))
+    return res.status(400).json({ error: 'Bad Request', message: 'stage обязателен: lead/qualified/proposal/negotiation/won/lost' });
+
+  const { rows: [deal] } = await pool.query('SELECT id FROM deals WHERE id=$1', [req.params.id]);
+  if (!deal) return res.status(404).json({ error: 'Not Found' });
+
+  await pool.query('UPDATE deals SET stage=$1, updated_at=NOW() WHERE id=$2', [stage, req.params.id]);
+
+  const { rows: [row] } = await pool.query(
+    `SELECT d.id, d.title, d.value, d.stage, d.close_date,
+            d.account_id, d.owner_id, d.created_at, d.updated_at,
+            a.name AS account_name,
+            u.name AS owner_name
+     FROM deals d
+     LEFT JOIN accounts a ON d.account_id = a.id
+     LEFT JOIN users u ON d.owner_id = u.id
+     WHERE d.id=$1`,
+    [req.params.id]
+  );
+  return res.json({
+    id: row.id,
+    title: row.title,
+    value: row.value,
+    stage: row.stage,
+    close_date: row.close_date,
+    account_id: row.account_id,
+    owner_id: row.owner_id,
+    account: row.account_id ? { id: row.account_id, name: row.account_name } : null,
+    owner: { id: row.owner_id, name: row.owner_name },
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  });
+}
+
+module.exports = { createDeal, listDeals, getDealById, updateDeal, linkContact, unlinkContact, deleteDeal, getKanbanDeals, updateDealStage };
