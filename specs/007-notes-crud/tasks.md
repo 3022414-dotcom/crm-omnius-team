@@ -21,8 +21,8 @@
 
 **Purpose**: Создать скелеты новых файлов перед реализацией user stories
 
-- [ ] T001 Create server/controllers/notesController.js with: `const pool = require('../db')`, `const VALID_ENTITY_TYPES = ['account','contact','deal']`, `const ENTITY_TABLES = { account:'accounts', contact:'contacts', deal:'deals' }`, and `module.exports = {}`
-- [ ] T002 Create server/routes/notes.js with: `const express = require('express')`, `const router = express.Router()`, `const { requireRole } = require('../middleware/auth')`, and `module.exports = router`
+- [X] T001 Create server/controllers/notesController.js with: `const pool = require('../db')`, `const VALID_ENTITY_TYPES = ['account','contact','deal']`, `const ENTITY_TABLES = { account:'accounts', contact:'contacts', deal:'deals' }`, and `module.exports = {}`
+- [X] T002 Create server/routes/notes.js with: `const express = require('express')`, `const router = express.Router()`, `const { requireRole } = require('../middleware/auth')`, and `module.exports = router`
 
 **Checkpoint**: Два новых файла существуют; сервер стартует без ошибок (маршруты ещё не подключены)
 
@@ -44,9 +44,9 @@
 
 ### Implementation for User Story 1
 
-- [ ] T003 [US1] Implement `createNote` in server/controllers/notesController.js: validate `entity_type` via `VALID_ENTITY_TYPES` (400 иначе); validate `entity_id` exists via `SELECT id FROM ${ENTITY_TABLES[entity_type]} WHERE id=$1` (404 иначе); trim `content`, проверить непустой (400 иначе); `INSERT INTO notes (entity_type, entity_id, content, author_id) VALUES ($1,$2,$3,$4) RETURNING *`; вернуть 201 с **явным маппингом** (НЕ spread `{...note}`): `res.status(201).json({ id:note.id, content:note.content, entity_type:note.entity_type, entity_id:note.entity_id, author:{id:req.user.id, name:req.user.name}, created_at:note.created_at, updated_at:note.updated_at })`; добавить в module.exports
-- [ ] T004 [US1] Add POST route to server/routes/notes.js: import `createNote` from notesController; `router.post('/', requireRole(['admin','bdm']), createNote)`
-- [ ] T005 [US1] Mount notesRouter in server/app.js: `const notesRouter = require('./routes/notes')`; `app.use('/api/v1/notes', notesRouter)` — добавить после строки с dealsRouter
+- [X] T003 [US1] Implement `createNote` in server/controllers/notesController.js: validate `entity_type` via `VALID_ENTITY_TYPES` (400 иначе); validate `entity_id` exists via `SELECT id FROM ${ENTITY_TABLES[entity_type]} WHERE id=$1` (404 иначе); trim `content`, проверить непустой (400 иначе); `INSERT INTO notes (entity_type, entity_id, content, author_id) VALUES ($1,$2,$3,$4) RETURNING *`; вернуть 201 с **явным маппингом** (НЕ spread `{...note}`): `res.status(201).json({ id:note.id, content:note.content, entity_type:note.entity_type, entity_id:note.entity_id, author:{id:req.user.id, name:req.user.name}, created_at:note.created_at, updated_at:note.updated_at })`; добавить в module.exports
+- [X] T004 [US1] Add POST route to server/routes/notes.js: import `createNote` from notesController; `router.post('/', requireRole(['admin','bdm']), createNote)`
+- [X] T005 [US1] Mount notesRouter in server/app.js: `const notesRouter = require('./routes/notes')`; `app.use('/api/v1/notes', notesRouter)` — добавить после строки с dealsRouter
 
 **Checkpoint**: `POST /api/v1/notes` работает — 201 при успехе, 400/404/403 при ошибках
 
@@ -60,10 +60,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T006 [US2] Implement `listNotesForEntity(entityType)` factory in server/controllers/notesController.js: функция возвращает `async (req, res) => {...}`; внутри — проверить существование сущности `SELECT id FROM ${ENTITY_TABLES[entityType]} WHERE id=$1` (404 если нет); запрос `SELECT n.id,n.content,n.entity_type,n.entity_id,n.author_id,n.created_at,n.updated_at, u.name AS author_name FROM notes n JOIN users u ON n.author_id=u.id WHERE n.entity_type=$1 AND n.entity_id=$2 ORDER BY n.created_at DESC`; вернуть с **явным маппингом** (НЕ spread `{...r}`): `res.json(rows.map(r => ({ id:r.id, content:r.content, entity_type:r.entity_type, entity_id:r.entity_id, author:{id:r.author_id, name:r.author_name}, created_at:r.created_at, updated_at:r.updated_at })))`; добавить в module.exports
-- [ ] T007 [P] [US2] Add GET /:id/notes to server/routes/accounts.js: import `listNotesForEntity` from notesController; вставить `router.get('/:id/notes', listNotesForEntity('account'))` ПЕРЕД существующей строкой `router.get('/:id', getAccountById)`
-- [ ] T008 [P] [US2] Add GET /:id/notes to server/routes/contacts.js: import `listNotesForEntity` from notesController; вставить `router.get('/:id/notes', listNotesForEntity('contact'))` ПЕРЕД существующей строкой `router.get('/:id', getContactById)`
-- [ ] T009 [P] [US2] Add GET /:id/notes to server/routes/deals.js: import `listNotesForEntity` from notesController; вставить `router.get('/:id/notes', listNotesForEntity('deal'))` ПЕРЕД существующей строкой `router.get('/:id', getDealById)`
+- [X] T006 [US2] Implement `listNotesForEntity(entityType)` factory in server/controllers/notesController.js: функция возвращает `async (req, res) => {...}`; внутри — проверить существование сущности `SELECT id FROM ${ENTITY_TABLES[entityType]} WHERE id=$1` (404 если нет); запрос `SELECT n.id,n.content,n.entity_type,n.entity_id,n.author_id,n.created_at,n.updated_at, u.name AS author_name FROM notes n JOIN users u ON n.author_id=u.id WHERE n.entity_type=$1 AND n.entity_id=$2 ORDER BY n.created_at DESC`; вернуть с **явным маппингом** (НЕ spread `{...r}`): `res.json(rows.map(r => ({ id:r.id, content:r.content, entity_type:r.entity_type, entity_id:r.entity_id, author:{id:r.author_id, name:r.author_name}, created_at:r.created_at, updated_at:r.updated_at })))`; добавить в module.exports
+- [X] T007 [P] [US2] Add GET /:id/notes to server/routes/accounts.js: import `listNotesForEntity` from notesController; вставить `router.get('/:id/notes', listNotesForEntity('account'))` ПЕРЕД существующей строкой `router.get('/:id', getAccountById)`
+- [X] T008 [P] [US2] Add GET /:id/notes to server/routes/contacts.js: import `listNotesForEntity` from notesController; вставить `router.get('/:id/notes', listNotesForEntity('contact'))` ПЕРЕД существующей строкой `router.get('/:id', getContactById)`
+- [X] T009 [P] [US2] Add GET /:id/notes to server/routes/deals.js: import `listNotesForEntity` from notesController; вставить `router.get('/:id/notes', listNotesForEntity('deal'))` ПЕРЕД существующей строкой `router.get('/:id', getDealById)`
 
 **Checkpoint**: GET /:entity/:id/notes работает для accounts, contacts и deals — plain array или 404
 
@@ -77,8 +77,8 @@
 
 ### Implementation for User Story 3
 
-- [ ] T010 [US3] Implement `updateNote` in server/controllers/notesController.js: trim `content`, проверить непустой (400); `SELECT * FROM notes WHERE id=$1` (404 если нет); проверить `note.author_id !== req.user.id && req.user.role !== 'admin'` → 403; `UPDATE notes SET content=$1, updated_at=NOW() WHERE id=$2 RETURNING *`; `SELECT name FROM users WHERE id=$1` с `updated.author_id` для authorName; вернуть 200 с **явным маппингом** (НЕ spread `{...updated}`): `res.json({ id:updated.id, content:updated.content, entity_type:updated.entity_type, entity_id:updated.entity_id, author:{id:updated.author_id, name:authorName}, created_at:updated.created_at, updated_at:updated.updated_at })`; добавить в module.exports
-- [ ] T011 [US3] Add PUT route to server/routes/notes.js: import `updateNote` from notesController; `router.put('/:id', requireRole(['admin','bdm']), updateNote)`
+- [X] T010 [US3] Implement `updateNote` in server/controllers/notesController.js: trim `content`, проверить непустой (400); `SELECT * FROM notes WHERE id=$1` (404 если нет); проверить `note.author_id !== req.user.id && req.user.role !== 'admin'` → 403; `UPDATE notes SET content=$1, updated_at=NOW() WHERE id=$2 RETURNING *`; `SELECT name FROM users WHERE id=$1` с `updated.author_id` для authorName; вернуть 200 с **явным маппингом** (НЕ spread `{...updated}`): `res.json({ id:updated.id, content:updated.content, entity_type:updated.entity_type, entity_id:updated.entity_id, author:{id:updated.author_id, name:authorName}, created_at:updated.created_at, updated_at:updated.updated_at })`; добавить в module.exports
+- [X] T011 [US3] Add PUT route to server/routes/notes.js: import `updateNote` from notesController; `router.put('/:id', requireRole(['admin','bdm']), updateNote)`
 
 **Checkpoint**: `PUT /api/v1/notes/:id` работает — 200/400/403/404 проверяются
 
@@ -92,8 +92,8 @@
 
 ### Implementation for User Story 4
 
-- [ ] T012 [US4] Implement `deleteNote` in server/controllers/notesController.js: `SELECT * FROM notes WHERE id=$1` (404 если нет); проверить `note.author_id !== req.user.id && req.user.role !== 'admin'` → 403; `DELETE FROM notes WHERE id=$1`; вернуть `res.status(204).send()`; добавить в module.exports
-- [ ] T013 [US4] Add DELETE route to server/routes/notes.js: import `deleteNote` from notesController; `router.delete('/:id', requireRole(['admin','bdm']), deleteNote)`
+- [X] T012 [US4] Implement `deleteNote` in server/controllers/notesController.js: `SELECT * FROM notes WHERE id=$1` (404 если нет); проверить `note.author_id !== req.user.id && req.user.role !== 'admin'` → 403; `DELETE FROM notes WHERE id=$1`; вернуть `res.status(204).send()`; добавить в module.exports
+- [X] T013 [US4] Add DELETE route to server/routes/notes.js: import `deleteNote` from notesController; `router.delete('/:id', requireRole(['admin','bdm']), deleteNote)`
 
 **Checkpoint**: `DELETE /api/v1/notes/:id` работает — 204/403/404 проверяются
 
@@ -103,7 +103,7 @@
 
 **Purpose**: Финальная проверка целостности и ручная валидация
 
-- [ ] T014 Verify module.exports in server/controllers/notesController.js exports all four: `createNote`, `updateNote`, `deleteNote`, `listNotesForEntity`
+- [X] T014 Verify module.exports in server/controllers/notesController.js exports all four: `createNote`, `updateNote`, `deleteNote`, `listNotesForEntity`
 - [ ] T015 Run quickstart.md §5 smoke test: POST /api/v1/notes → GET /api/v1/accounts/:id/notes (проверить 1 заметку) → DELETE /api/v1/notes/:id → 204; итоговый список пустой
 
 ---

@@ -11,6 +11,7 @@ const usersRouter = require('./routes/users');
 const accountsRouter = require('./routes/accounts');
 const contactsRouter = require('./routes/contacts');
 const dealsRouter = require('./routes/deals');
+const notesRouter = require('./routes/notes');
 
 const PgSession = require('connect-pg-simple')(session);
 
@@ -81,6 +82,7 @@ app.use('/api/v1/users', usersRouter);
 app.use('/api/v1/accounts', accountsRouter);
 app.use('/api/v1/contacts', contactsRouter);
 app.use('/api/v1/deals', dealsRouter);
+app.use('/api/v1/notes', notesRouter);
 
 app.use('/', authRouter);
 

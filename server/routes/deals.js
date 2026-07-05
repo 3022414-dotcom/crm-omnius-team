@@ -1,10 +1,12 @@
 const express = require('express');
 const { requireRole } = require('../middleware/auth');
 const { createDeal, listDeals, getDealById, updateDeal, linkContact, unlinkContact, deleteDeal } = require('../controllers/dealsController');
+const { listNotesForEntity } = require('../controllers/notesController');
 
 const router = express.Router();
 
 router.get('/', listDeals);
+router.get('/:id/notes', listNotesForEntity('deal'));
 router.get('/:id', getDealById);
 router.post('/', requireRole(['admin', 'bdm']), createDeal);
 router.put('/:id', requireRole(['admin', 'bdm']), updateDeal);
