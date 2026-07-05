@@ -12,11 +12,13 @@ const {
   deleteContact,
 } = require('../controllers/contactsController');
 const { listNotesForEntity } = require('../controllers/notesController');
+const { listAttachmentsForEntity } = require('../controllers/attachmentsController');
 
 const router = express.Router();
 
 router.get('/', listContacts);
 router.get('/:id/notes', listNotesForEntity('contact'));
+router.get('/:id/attachments', listAttachmentsForEntity('contact'));
 router.get('/:id', getContactById);
 
 router.post('/', requireRole(['admin', 'bdm']), createContact);

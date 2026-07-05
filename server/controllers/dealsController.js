@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const pool = require('../db/pool');
 
 const VALID_STAGES = ['lead', 'qualified', 'proposal', 'negotiation', 'won', 'lost'];
@@ -221,6 +223,13 @@ async function deleteDeal(req, res) {
   if (!deal[0]) return res.status(404).json({ error: 'Not Found' });
 
   await pool.query("DELETE FROM activities  WHERE entity_type='deal' AND entity_id=$1", [id]);
+  const { rows: dealAtts } = await pool.query(
+    "SELECT file_path FROM attachments WHERE entity_type='deal' AND entity_id=$1",
+    [id]
+  );
+  for (const att of dealAtts) {
+    try { fs.unlinkSync(path.join(__dirname, '../../', att.file_path)); } catch (e) {}
+  }
   await pool.query("DELETE FROM attachments WHERE entity_type='deal' AND entity_id=$1", [id]);
   await pool.query("DELETE FROM notes       WHERE entity_type='deal' AND entity_id=$1", [id]);
   await pool.query('DELETE FROM deals WHERE id=$1', [id]);
