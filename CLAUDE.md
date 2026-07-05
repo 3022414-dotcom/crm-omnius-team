@@ -63,5 +63,5 @@
 Фронтенд не выбран — зафиксировать до F-04 (Next.js или React+Vite).
 
 <!-- SPECKIT START -->
-**Active feature plan**: [specs/010-kanban-board/plan.md](specs/010-kanban-board/plan.md)
+**Active feature plan**: [specs/001-1-backend-docker/plan.md](specs/001-1-backend-docker/plan.md)
 <!-- SPECKIT END -->
