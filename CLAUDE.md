@@ -63,5 +63,5 @@
 Фронтенд не выбран — зафиксировать до F-04 (Next.js или React+Vite).
 
 <!-- SPECKIT START -->
-**Active feature plan**: [specs/008-attachments-crud/plan.md](specs/008-attachments-crud/plan.md)
+**Active feature plan**: [specs/009-activities-crud/plan.md](specs/009-activities-crud/plan.md)
 <!-- SPECKIT END -->
