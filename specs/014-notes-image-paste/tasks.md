@@ -51,6 +51,7 @@
   - Check `event.clipboardData.items` for an item where `item.kind === 'file'` and `item.type.startsWith('image/')`
   - If no image: return (allow normal paste)
   - If image type not in `['image/jpeg','image/png','image/gif','image/webp']`: set an error entry in `pendingImages`, return
+  - **If `file.size > 50 * 1024 * 1024` (50 MB): push `{ localId: crypto.randomUUID(), status: 'error', errorMessage: 'Image too large (max 50 MB)' }` to `pendingImages` and return** (FR-008 — client-side pre-check before upload)
   - Call `event.preventDefault()`
   - Generate `localId = crypto.randomUUID()`
   - Push `{ localId, status: 'uploading' }` to `pendingImages`
@@ -97,13 +98,15 @@
 
 **Purpose**: Cross-cutting verification, edge case spot-checks, reset-on-cancel confirmation.
 
-- [ ] T011 [P] Verify that cancelling a note edit (clicking away, pressing Escape, or switching tabs) resets `pendingImages` to `[]` so stale thumbnails don't appear when re-opening the editor in `client/src/components/tabs/NotesTab.jsx`
+- [ ] T011 [P] In `client/src/components/tabs/NotesTab.jsx`, confirm `pendingImages` resets when the note editor is dismissed. During T002 you read the component — if the editor is **conditionally rendered** (`{isEditing && <textarea>}`), state resets automatically on unmount (no code change needed, just verify). If the editor is **CSS-hidden** (always mounted, toggled with a class), add an explicit `useEffect(() => { if (!isEditing) setPendingImages([]) }, [isEditing])` to force the reset. Confirm either way that reopening the editor shows an empty thumbnail strip.
 
 - [ ] T012 [P] Verify quickstart.md Scenario 3 (non-image paste): copy plain text and paste into note textarea — no thumbnail appears, no upload triggered, text inserts normally
 
 - [ ] T013 [P] Verify quickstart.md Scenario 4 (unsupported format): if possible, paste an SVG — error thumbnail shows, no upload, textarea unchanged
 
-- [ ] T014 Run all 7 quickstart.md scenarios and confirm each passes
+- [ ] T014 Run all 7 quickstart.md scenarios and confirm each passes (include Scenario 2 to verify viewer role sees no paste UI — FR-011)
+
+- [ ] T015 [P] Verify paste behavior in Firefox and Safari: open Notes tab, paste a screenshot, confirm thumbnail strip appears, upload completes, and saving stores the image reference (SC-004)
 
 ---
 
