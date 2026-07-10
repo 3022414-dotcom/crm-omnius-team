@@ -17,6 +17,15 @@ services:
       timeout: 5s
       retries: 5
 
+  frontend:
+    build: ./client
+    container_name: omnius_crm_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
   backend:
     build: .
     container_name: omnius_crm_backend

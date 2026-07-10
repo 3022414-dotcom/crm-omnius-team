@@ -8,7 +8,9 @@
     "dev": "nodemon server/index.js",
     "migrate": "node-pg-migrate -m server/migrations up",
     "migrate:down": "node-pg-migrate -m server/migrations down",
-    "seed": "node server/db/seed.js"
+    "seed": "node server/db/seed.js",
+    "dev:client": "cd client && npm run dev",
+    "build:client": "cd client && npm run build"
   },
   "dependencies": {
     "connect-pg-simple": "^10.0.0",

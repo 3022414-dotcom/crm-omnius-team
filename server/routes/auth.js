@@ -32,11 +32,12 @@ router.get('/auth/google/callback', (req, res, next) => {
     if (err) return next(err);
     if (!user) {
       const error = info?.message || 'access_denied';
-      return res.redirect(`/?error=${encodeURIComponent(error)}`);
+      const frontendUrl = process.env.FRONTEND_URL || '';
+      return res.redirect(`${frontendUrl}/login?error=${encodeURIComponent(error)}`);
     }
     req.logIn(user, (loginErr) => {
       if (loginErr) return next(loginErr);
-      res.redirect('/');
+      res.redirect(process.env.FRONTEND_URL || '/');
     });
   })(req, res, next);
 });
@@ -44,7 +45,7 @@ router.get('/auth/google/callback', (req, res, next) => {
 router.get('/auth/logout', (req, res, next) => {
   req.logout((err) => {
     if (err) return next(err);
-    res.redirect('/');
+    res.redirect(`${process.env.FRONTEND_URL || ''}/login`);
   });
 });
 
