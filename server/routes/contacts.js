@@ -14,10 +14,12 @@ const {
 const { listNotesForEntity } = require('../controllers/notesController');
 const { listAttachmentsForEntity } = require('../controllers/attachmentsController');
 const { listActivitiesForEntity } = require('../controllers/activitiesController');
+const { listDealsByContact } = require('../controllers/dealsController');
 
 const router = express.Router();
 
 router.get('/', listContacts);
+router.get('/:id/deals', listDealsByContact);
 router.get('/:id/notes', listNotesForEntity('contact'));
 router.get('/:id/attachments', listAttachmentsForEntity('contact'));
 router.get('/:id/activities', listActivitiesForEntity('contact'));

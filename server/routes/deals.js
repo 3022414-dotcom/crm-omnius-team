@@ -1,6 +1,6 @@
 const express = require('express');
 const { requireRole } = require('../middleware/auth');
-const { createDeal, listDeals, getDealById, updateDeal, linkContact, unlinkContact, deleteDeal, getKanbanDeals, updateDealStage } = require('../controllers/dealsController');
+const { createDeal, listDeals, getDealById, updateDeal, updateDealContact, linkContact, unlinkContact, deleteDeal, getKanbanDeals, updateDealStage } = require('../controllers/dealsController');
 const { listNotesForEntity } = require('../controllers/notesController');
 const { listAttachmentsForEntity } = require('../controllers/attachmentsController');
 const { listActivitiesForEntity } = require('../controllers/activitiesController');
@@ -17,6 +17,7 @@ router.post('/', requireRole(['admin', 'bdm']), createDeal);
 router.put('/:id', requireRole(['admin', 'bdm']), updateDeal);
 router.patch('/:id/stage', requireRole(['admin', 'bdm']), updateDealStage);
 router.post('/:id/contacts', requireRole(['admin', 'bdm']), linkContact);
+router.patch('/:id/contacts/:contactId', requireRole(['admin', 'bdm']), updateDealContact);
 router.delete('/:id/contacts/:contact_id', requireRole(['admin', 'bdm']), unlinkContact);
 router.delete('/:id', requireRole(['admin']), deleteDeal);
 

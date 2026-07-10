@@ -2,27 +2,30 @@ const fs = require('fs');
 const path = require('path');
 const pool = require('../db/pool');
 
-const ACCOUNT_FIELDS = 'id, name, industry, website, phone, address, notes, owner_id, created_at, updated_at';
+// Base DB columns — used in INSERT/UPDATE RETURNING (no JOIN-derived fields)
+const ACCOUNT_FIELDS = 'id, name, type, location, industry, size, is_target, website, phone, address, notes, account_storage, account_manager_id, owner_id, created_at, updated_at';
 
 const ACCOUNT_WITH_COUNTS = `
-  a.id, a.name, a.industry, a.website, a.phone, a.address, a.notes,
-  a.owner_id, a.created_at, a.updated_at,
+  a.id, a.name, a.type, a.location, a.industry, a.size, a.is_target,
+  a.website, a.phone, a.address, a.notes, a.account_storage,
+  a.account_manager_id, a.owner_id, a.created_at, a.updated_at,
+  am.id AS account_manager_uid, am.name AS account_manager_name,
   (SELECT COUNT(*)::int FROM contacts WHERE account_id = a.id) AS "contactsCount",
   (SELECT COUNT(*)::int FROM deals WHERE account_id = a.id) AS "dealsCount"
 `;
 
-const UPDATABLE_FIELDS = ['name', 'industry', 'website', 'phone', 'address', 'notes'];
+const UPDATABLE_FIELDS = ['name', 'type', 'location', 'industry', 'size', 'is_target', 'website', 'phone', 'address', 'notes', 'account_storage', 'account_manager_id'];
 
 async function createAccount(req, res) {
-  const { name, industry, website, phone, address, notes } = req.body;
+  const { name, type, location, industry, size, is_target, website, phone, address, notes, account_storage, account_manager_id } = req.body;
   if (!name || !name.trim()) {
     return res.status(400).json({ error: 'Bad Request', message: 'Поле name обязательно' });
   }
   const { rows } = await pool.query(
-    `INSERT INTO accounts (name, industry, website, phone, address, notes, owner_id)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `INSERT INTO accounts (name, type, location, industry, size, is_target, website, phone, address, notes, account_storage, account_manager_id, owner_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
      RETURNING ${ACCOUNT_FIELDS}`,
-    [name.trim(), industry || null, website || null, phone || null, address || null, notes || null, req.user.id]
+    [name.trim(), type || null, location || null, industry || null, size || null, is_target ?? false, website || null, phone || null, address || null, notes || null, account_storage || null, account_manager_id || null, req.user.id]
   );
   res.status(201).json(rows[0]);
 }
@@ -39,6 +42,7 @@ async function listAccounts(req, res) {
   const { rows } = await pool.query(
     `SELECT ${ACCOUNT_WITH_COUNTS}
      FROM accounts a
+     LEFT JOIN users am ON a.account_manager_id = am.id
      WHERE ($1 = '' OR a.name ILIKE '%' || $1 || '%')
      ORDER BY a.created_at DESC
      LIMIT $2 OFFSET $3`,
@@ -58,6 +62,7 @@ async function getAccountById(req, res) {
   const { rows } = await pool.query(
     `SELECT ${ACCOUNT_WITH_COUNTS}
      FROM accounts a
+     LEFT JOIN users am ON a.account_manager_id = am.id
      WHERE a.id = $1`,
     [req.params.id]
   );
@@ -79,7 +84,7 @@ async function updateAccount(req, res) {
   for (const field of UPDATABLE_FIELDS) {
     if (field in body) {
       updates.push(`${field} = $${idx++}`);
-      values.push(field === 'name' ? body[field].trim() : body[field]);
+      values.push(field === 'name' ? body[field].trim() : (body[field] === '' ? null : body[field]));
     }
   }
 

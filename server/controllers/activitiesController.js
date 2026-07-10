@@ -173,6 +173,57 @@ async function updateActivity(req, res) {
   });
 }
 
+async function listActivities(req, res) {
+  const { completed, type } = req.query;
+  const isAdmin = req.user.role === 'admin';
+
+  const conditions = [];
+  const params = [];
+  let idx = 1;
+
+  if (!isAdmin) {
+    conditions.push(`a.owner_id = $${idx++}`);
+    params.push(req.user.id);
+  }
+  if (completed !== undefined) {
+    conditions.push(`a.completed = $${idx++}`);
+    params.push(completed === 'true');
+  }
+  if (type) {
+    conditions.push(`a.type = $${idx++}`);
+    params.push(type);
+  }
+
+  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  const { rows } = await pool.query(
+    `SELECT a.id, a.type, a.entity_type, a.entity_id, a.description, a.due_date, a.completed,
+            CASE WHEN a.due_date IS NOT NULL AND a.due_date < NOW() AND a.completed = false
+                 THEN true ELSE false END AS overdue,
+            u.id AS owner_uid, u.name AS owner_name,
+            a.created_at, a.updated_at
+     FROM activities a
+     JOIN users u ON a.owner_id = u.id
+     ${where}
+     ORDER BY a.due_date ASC NULLS LAST, a.created_at DESC`,
+    params
+  );
+
+  return res.json(rows.map(r => ({
+    id: r.id,
+    type: r.type,
+    entity_type: r.entity_type,
+    entity_id: r.entity_id,
+    description: r.description,
+    due_date: r.due_date,
+    completed: r.completed,
+    overdue: r.overdue,
+    owner: { id: r.owner_uid, name: r.owner_name },
+    created_at: r.created_at,
+    updated_at: r.updated_at,
+  })));
+}
+
 async function deleteActivity(req, res) {
   const { rows: [existing] } = await pool.query(
     'SELECT id FROM activities WHERE id = $1',
@@ -186,4 +237,4 @@ async function deleteActivity(req, res) {
   return res.status(204).send();
 }
 
-module.exports = { createActivity, listActivitiesForEntity, updateActivity, deleteActivity };
+module.exports = { createActivity, listActivities, listActivitiesForEntity, updateActivity, deleteActivity };

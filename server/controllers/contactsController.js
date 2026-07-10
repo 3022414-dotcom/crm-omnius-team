@@ -3,8 +3,8 @@ const fs = require('fs');
 const { randomUUID } = require('crypto');
 const pool = require('../db/pool');
 
-const CONTACT_FIELDS = 'id, first_name, last_name, email, phone, position, photo_path, account_id, owner_id, created_at, updated_at';
-const UPDATABLE_FIELDS = ['first_name', 'last_name', 'email', 'phone', 'position', 'account_id'];
+const CONTACT_FIELDS = 'id, first_name, last_name, email, email_corp, email_personal, phone, position, photo_path, telegram, linkedin, facebook, location, language, preferred_communication, birthday, comments, source, account_id, owner_id, created_at, updated_at';
+const UPDATABLE_FIELDS = ['first_name', 'last_name', 'email', 'email_corp', 'email_personal', 'phone', 'position', 'account_id', 'telegram', 'linkedin', 'facebook', 'location', 'language', 'preferred_communication', 'birthday', 'comments', 'source'];
 
 async function savePhoto(contactId, file) {
   const rawExt = file.mimetype.split('/')[1];
@@ -19,7 +19,8 @@ async function savePhoto(contactId, file) {
 }
 
 async function createContact(req, res) {
-  const { first_name, last_name, email, phone, position, account_id } = req.body;
+  const { first_name, last_name, email, email_corp, email_personal, phone, position, account_id,
+          telegram, linkedin, facebook, location, language, preferred_communication, birthday, comments, source } = req.body;
 
   if (!first_name || !first_name.trim()) {
     return res.status(400).json({ error: 'Bad Request', message: 'Поле first_name обязательно' });
@@ -34,9 +35,15 @@ async function createContact(req, res) {
   }
 
   const { rows } = await pool.query(
-    `INSERT INTO contacts (first_name, last_name, email, phone, position, account_id, owner_id)
-     VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING ${CONTACT_FIELDS}`,
-    [first_name.trim(), last_name.trim(), email || null, phone || null, position || null, account_id || null, req.user.id]
+    `INSERT INTO contacts (first_name, last_name, email, email_corp, email_personal, phone, position, account_id,
+                           telegram, linkedin, facebook, location, language, preferred_communication, birthday, comments, source, owner_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+     RETURNING ${CONTACT_FIELDS}`,
+    [first_name.trim(), last_name.trim(), email || null, email_corp || null, email_personal || null,
+     phone || null, position || null, account_id || null,
+     telegram || null, linkedin || null, facebook || null,
+     location || null, language || null, preferred_communication || null,
+     birthday || null, comments || null, source || null, req.user.id]
   );
   res.status(201).json(rows[0]);
 }
@@ -51,13 +58,18 @@ async function listContacts(req, res) {
   const offset = (page - 1) * limit;
 
   const { rows } = await pool.query(
-    `SELECT ${CONTACT_FIELDS} FROM contacts
+    `SELECT c.id, c.first_name, c.last_name, c.email, c.email_corp, c.phone, c.position, c.photo_path,
+            c.account_id, c.owner_id, c.created_at, c.updated_at,
+            a.name AS account_name
+     FROM contacts c
+     LEFT JOIN accounts a ON c.account_id = a.id
      WHERE ($1 = '' OR (
-       first_name ILIKE '%' || $1 || '%' OR
-       last_name  ILIKE '%' || $1 || '%' OR
-       email      ILIKE '%' || $1 || '%'
+       c.first_name ILIKE '%' || $1 || '%' OR
+       c.last_name  ILIKE '%' || $1 || '%' OR
+       c.email      ILIKE '%' || $1 || '%' OR
+       c.email_corp ILIKE '%' || $1 || '%'
      ))
-     ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
+     ORDER BY c.created_at DESC LIMIT $2 OFFSET $3`,
     [search, limit, offset]
   );
   const { rows: countRows } = await pool.query(
@@ -74,7 +86,16 @@ async function listContacts(req, res) {
 
 async function getContactById(req, res) {
   const { rows } = await pool.query(
-    `SELECT ${CONTACT_FIELDS} FROM contacts WHERE id = $1`,
+    `SELECT c.id, c.first_name, c.last_name, c.email, c.email_corp, c.email_personal,
+            c.phone, c.position, c.photo_path,
+            c.telegram, c.linkedin, c.facebook,
+            c.location, c.language, c.preferred_communication,
+            c.birthday, c.comments, c.source,
+            c.account_id, c.owner_id, c.created_at, c.updated_at,
+            a.name AS account_name
+     FROM contacts c
+     LEFT JOIN accounts a ON c.account_id = a.id
+     WHERE c.id = $1`,
     [req.params.id]
   );
   if (!rows[0]) return res.status(404).json({ error: 'Not Found' });
@@ -144,7 +165,7 @@ async function updateContact(req, res) {
       if (field === 'first_name' || field === 'last_name') {
         values.push(body[field].trim());
       } else {
-        values.push(body[field]);
+        values.push(body[field] === '' ? null : body[field]);
       }
     }
   }

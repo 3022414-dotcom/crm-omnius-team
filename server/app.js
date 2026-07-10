@@ -90,4 +90,12 @@ app.use('/api/v1/activities', activitiesRouter);
 
 app.use('/', authRouter);
 
+if (process.env.NODE_ENV === 'production') {
+  const clientDist = path.join(__dirname, '..', 'client', 'dist');
+  app.use(express.static(clientDist));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(clientDist, 'index.html'));
+  });
+}
+
 module.exports = app;
