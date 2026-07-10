@@ -65,6 +65,7 @@ async function createAttachment(req, res) {
     entity_id: att.entity_id,
     uploaded_by: { id: req.user.id, name: req.user.name },
     created_at: att.created_at,
+    url: '/' + relPath,
   });
 }
 
