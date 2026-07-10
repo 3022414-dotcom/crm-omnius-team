@@ -60,8 +60,8 @@
 - Package manager: npm
 - Deploy: Docker + docker-compose
 
-Фронтенд не выбран — зафиксировать до F-04 (Next.js или React+Vite).
+Фронтенд: **React + Vite** (SPA) — зафиксировано в F-11.
 
 <!-- SPECKIT START -->
-**Active feature plan**: [specs/001-1-backend-docker/plan.md](specs/001-1-backend-docker/plan.md)
+**Active feature plan**: [specs/014-notes-image-paste/plan.md](specs/014-notes-image-paste/plan.md)
 <!-- SPECKIT END -->
