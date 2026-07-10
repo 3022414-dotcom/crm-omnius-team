@@ -17,9 +17,9 @@
 
 **Purpose**: Confirm the existing infrastructure that F-14 extends is in the expected state before modifying it.
 
-- [ ] T001 Read `server/controllers/attachmentsController.js` and confirm `createAttachment` computes `relPath` and it is accessible at the point of the `res.status(201).json(...)` call
-- [ ] T002 Read `client/src/components/tabs/NotesTab.jsx` and confirm the structure: textarea renders in create/edit mode, note content displays in view mode, `uploadAttachment` is imported from `api/attachments.js`
-- [ ] T003 Read `client/src/api/attachments.js` and confirm `uploadAttachment` accepts a `FormData` body and returns the parsed JSON response from the server
+- [X] T001 Read `server/controllers/attachmentsController.js` and confirm `createAttachment` computes `relPath` and it is accessible at the point of the `res.status(201).json(...)` call
+- [X] T002 Read `client/src/components/tabs/NotesTab.jsx` and confirm the structure: textarea renders in create/edit mode, note content displays in view mode, `uploadAttachment` is imported from `api/attachments.js`
+- [X] T003 Read `client/src/api/attachments.js` and confirm `uploadAttachment` accepts a `FormData` body and returns the parsed JSON response from the server
 
 **Checkpoint**: Both source files located, structure understood, ready to modify.
 
@@ -31,7 +31,7 @@
 
 **⚠️ CRITICAL**: US1 frontend paste flow depends on the `url` field from the backend. Complete this before Phase 3.
 
-- [ ] T004 In `server/controllers/attachmentsController.js`, add `url: '/' + relPath` to the `res.status(201).json(...)` call inside `createAttachment`. The `relPath` variable (relative path from project root, e.g., `uploads/accounts/uuid/uuid_file.png`) is already computed above; just add the field to the response object.
+- [X] T004 In `server/controllers/attachmentsController.js`, add `url: '/' + relPath` to the `res.status(201).json(...)` call inside `createAttachment`. The `relPath` variable (relative path from project root, e.g., `uploads/accounts/uuid/uuid_file.png`) is already computed above; just add the field to the response object.
 
 **Checkpoint**: `POST /api/v1/attachments` now returns `{ ..., url: "/uploads/..." }`. Verify by uploading any file and inspecting the JSON response.
 
@@ -45,9 +45,9 @@
 
 ### Implementation for User Story 1
 
-- [ ] T005 [US1] In `client/src/components/tabs/NotesTab.jsx`, add `const [pendingImages, setPendingImages] = useState([])` to the component state (import `useState` if not already imported). Add a reset call `setPendingImages([])` wherever the note editor is cancelled or the saved note is dismissed.
+- [X] T005 [US1] In `client/src/components/tabs/NotesTab.jsx`, add `const [pendingImages, setPendingImages] = useState([])` to the component state (import `useState` if not already imported). Add a reset call `setPendingImages([])` wherever the note editor is cancelled or the saved note is dismissed.
 
-- [ ] T006 [US1] In `client/src/components/tabs/NotesTab.jsx`, add the `handlePaste` function (per `contracts/ui.md`):
+- [X] T006 [US1] In `client/src/components/tabs/NotesTab.jsx`, add the `handlePaste` function (per `contracts/ui.md`):
   - Check `event.clipboardData.items` for an item where `item.kind === 'file'` and `item.type.startsWith('image/')`
   - If no image: return (allow normal paste)
   - If image type not in `['image/jpeg','image/png','image/gif','image/webp']`: set an error entry in `pendingImages`, return
@@ -60,9 +60,9 @@
     - On success: update entry to `{ localId, status: 'done', url: att.url }`, append `![image](${att.url})\n` to the note text state
     - On error: update entry to `{ localId, status: 'error', errorMessage: err.message || 'Upload failed' }`
 
-- [ ] T007 [US1] In `client/src/components/tabs/NotesTab.jsx`, attach `onPaste={handlePaste}` to the note `<textarea>` element used in create/edit mode.
+- [X] T007 [US1] In `client/src/components/tabs/NotesTab.jsx`, attach `onPaste={handlePaste}` to the note `<textarea>` element used in create/edit mode.
 
-- [ ] T008 [US1] In `client/src/components/tabs/NotesTab.jsx`, add the thumbnail strip UI below the `<textarea>` in create/edit mode (per `contracts/ui.md`):
+- [X] T008 [US1] In `client/src/components/tabs/NotesTab.jsx`, add the thumbnail strip UI below the `<textarea>` in create/edit mode (per `contracts/ui.md`):
   - Render only when `pendingImages.length > 0`
   - A `<div className="flex flex-wrap gap-2 mt-2">` containing one `<div className="relative w-16 h-16 rounded border border-border overflow-hidden bg-muted">` per entry
   - Status `'uploading'`: centered `<Loader2 className="animate-spin w-4 h-4 text-muted-foreground" />` (import `Loader2` from `lucide-react`)
@@ -81,14 +81,14 @@
 
 ### Implementation for User Story 2
 
-- [ ] T009 [US2] In `client/src/components/tabs/NotesTab.jsx`, add the `renderNoteContent(content)` function (per `contracts/ui.md`):
+- [X] T009 [US2] In `client/src/components/tabs/NotesTab.jsx`, add the `renderNoteContent(content)` function (per `contracts/ui.md`):
   - Regex: `/!\[([^\]]*)\]\(([^)]+)\)/g`
   - Walk through matches, collecting alternating text and image segments
   - Return an array of React elements:
     - Text segments: `<span key={i} className="whitespace-pre-wrap">{segment}</span>`
     - Image segments: `<img key={i} src={src} alt={alt} className="max-w-full rounded border border-border my-1" style={{ maxHeight: '400px' }} />`
 
-- [ ] T010 [US2] In `client/src/components/tabs/NotesTab.jsx`, replace the plain-text display of note content in view mode with `renderNoteContent(note.content)`. The call site is wherever the note body is currently rendered (typically `<p className="...">note.content</p>` or similar) — wrap the output in a `<div className="text-sm">` to maintain consistent spacing.
+- [X] T010 [US2] In `client/src/components/tabs/NotesTab.jsx`, replace the plain-text display of note content in view mode with `renderNoteContent(note.content)`. The call site is wherever the note body is currently rendered (typically `<p className="...">note.content</p>` or similar) — wrap the output in a `<div className="text-sm">` to maintain consistent spacing.
 
 **Checkpoint**: User Story 2 is complete. Verify with quickstart.md Scenarios 1 (view step), 2, 5 (multiple images).
 
@@ -98,11 +98,11 @@
 
 **Purpose**: Cross-cutting verification, edge case spot-checks, reset-on-cancel confirmation.
 
-- [ ] T011 [P] In `client/src/components/tabs/NotesTab.jsx`, confirm `pendingImages` resets when the note editor is dismissed. During T002 you read the component — if the editor is **conditionally rendered** (`{isEditing && <textarea>}`), state resets automatically on unmount (no code change needed, just verify). If the editor is **CSS-hidden** (always mounted, toggled with a class), add an explicit `useEffect(() => { if (!isEditing) setPendingImages([]) }, [isEditing])` to force the reset. Confirm either way that reopening the editor shows an empty thumbnail strip.
+- [X] T011 [P] In `client/src/components/tabs/NotesTab.jsx`, confirm `pendingImages` resets when the note editor is dismissed. During T002 you read the component — if the editor is **conditionally rendered** (`{isEditing && <textarea>}`), state resets automatically on unmount (no code change needed, just verify). If the editor is **CSS-hidden** (always mounted, toggled with a class), add an explicit `useEffect(() => { if (!isEditing) setPendingImages([]) }, [isEditing])` to force the reset. Confirm either way that reopening the editor shows an empty thumbnail strip.
 
-- [ ] T012 [P] Verify quickstart.md Scenario 3 (non-image paste): copy plain text and paste into note textarea — no thumbnail appears, no upload triggered, text inserts normally
+- [X] T012 [P] Verify quickstart.md Scenario 3 (non-image paste): copy plain text and paste into note textarea — no thumbnail appears, no upload triggered, text inserts normally
 
-- [ ] T013 [P] Verify quickstart.md Scenario 4 (unsupported format): if possible, paste an SVG — error thumbnail shows, no upload, textarea unchanged
+- [X] T013 [P] Verify quickstart.md Scenario 4 (unsupported format): if possible, paste an SVG — error thumbnail shows, no upload, textarea unchanged
 
 - [ ] T014 Run all 7 quickstart.md scenarios and confirm each passes (include Scenario 2 to verify viewer role sees no paste UI — FR-011)
 
