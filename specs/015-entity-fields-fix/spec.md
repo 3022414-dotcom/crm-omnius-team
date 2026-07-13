@@ -30,7 +30,7 @@
 
 **Acceptance Scenarios**:
 
-1. **Given** открыта карточка существующей сделки, **When** пользователь смотрит на левую панель полей, **Then** поля идут строго в порядке: Deal Name → Stage → Account → Location → Deal Type → Source → Project Domain → Description → Our Services → Amount → Currency → Deal Storage → Deal Owner → Created By → Created Date → Expected Start Date → Lost Reason (только при stage = lost).
+1. **Given** открыта карточка существующей сделки, **When** пользователь смотрит на левую панель полей, **Then** поля идут строго в порядке: Deal Name → Stage → Account → Location → Deal Type → Source → Project Domain → Description → Our Services → Amount → Currency → Deal Storage → Deal Owner → Created By → Created Date → Expected Start Date → Close Date → Lost Reason (только при stage = lost).
 
 2. **Given** пользователь кликает на поле Our Services, **When** открывается редактор мультивыбора, **Then** доступны ровно 7 значений: Workshop, Webinar, Consulting, POC, Development, Accelerator, Performance — и никакие другие.
 
@@ -89,7 +89,7 @@
 
 - **FR-005**: В карточке Deal поле Amount ДОЛЖНО отображаться с пробелом в качестве разделителя тысяч (например, `5 000 000`). В режиме редактирования допустим ввод без разделителей.
 
-- **FR-006**: Поля в левой панели карточки Deal ДОЛЖНЫ отображаться строго в следующем порядке (сверху вниз): Deal Name, Stage, Account, Location, Deal Type, Source, Project Domain, Description, Our Services, Amount, Currency, Deal Storage, Deal Owner, Created By, Created Date, Expected Start Date, Lost Reason.
+- **FR-006**: Поля в левой панели карточки Deal ДОЛЖНЫ отображаться строго в следующем порядке (сверху вниз): Deal Name, Stage, Account, Location, Deal Type, Source, Project Domain, Description, Our Services, Amount, Currency, Deal Storage, Deal Owner, Created By, Created Date, Expected Start Date, Close Date, Lost Reason.
 
 **Account and Contact:**
 
@@ -123,7 +123,7 @@
 - Поле `created_by_id` не существует в текущей схеме БД — требуется миграция для добавления колонки в таблицы deals, accounts, contacts и установки значения по умолчанию (NULL для существующих записей).
 - Список пользователей для Deal Owner доступен через существующий API `/api/v1/users` (или добавляется при необходимости).
 - Разделитель тысяч в Amount — пробел (не точка, не запятая), в соответствии с российским форматом чисел.
-- Close Date остаётся в БД, но убирается из отображения в левой панели согласно указанному порядку полей.
+- Close Date отображается после поля Expected Start Date (позиция 17 из 18).
 - Lost Reason отображается только при `stage = 'lost'` (поведение сохраняется).
 - Existing records с NULL в `created_by_id` отображают прочерк «—» без ошибки.
 - Изменения только на фронтенде (форматирование Amount, порядок полей, значения Our Services) и минимальная миграция для добавления `created_by_id`.
