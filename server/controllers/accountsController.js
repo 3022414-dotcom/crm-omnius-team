@@ -3,7 +3,7 @@ const path = require('path');
 const pool = require('../db/pool');
 
 // Base DB columns — used in INSERT/UPDATE RETURNING (no JOIN-derived fields)
-const ACCOUNT_FIELDS = 'id, name, type, location, industry, size, is_target, website, phone, address, notes, account_storage, account_manager_id, owner_id, created_at, updated_at';
+const ACCOUNT_FIELDS = 'id, name, type, location, industry, size, is_target, website, phone, address, notes, account_storage, account_manager_id, owner_id, created_by_id, created_at, updated_at';
 
 const ACCOUNT_WITH_COUNTS = `
   a.id, a.name, a.type, a.location, a.industry, a.size, a.is_target,
@@ -22,10 +22,10 @@ async function createAccount(req, res) {
     return res.status(400).json({ error: 'Bad Request', message: 'Поле name обязательно' });
   }
   const { rows } = await pool.query(
-    `INSERT INTO accounts (name, type, location, industry, size, is_target, website, phone, address, notes, account_storage, account_manager_id, owner_id)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+    `INSERT INTO accounts (name, type, location, industry, size, is_target, website, phone, address, notes, account_storage, account_manager_id, owner_id, created_by_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
      RETURNING ${ACCOUNT_FIELDS}`,
-    [name.trim(), type || null, location || null, industry || null, size || null, is_target ?? false, website || null, phone || null, address || null, notes || null, account_storage || null, account_manager_id || null, req.user.id]
+    [name.trim(), type || null, location || null, industry || null, size || null, is_target ?? false, website || null, phone || null, address || null, notes || null, account_storage || null, account_manager_id || null, req.user.id, req.user.id]
   );
   res.status(201).json(rows[0]);
 }
@@ -60,14 +60,21 @@ async function listAccounts(req, res) {
 
 async function getAccountById(req, res) {
   const { rows } = await pool.query(
-    `SELECT ${ACCOUNT_WITH_COUNTS}
+    `SELECT ${ACCOUNT_WITH_COUNTS}, cb.id AS created_by_uid, cb.name AS created_by_name
      FROM accounts a
      LEFT JOIN users am ON a.account_manager_id = am.id
+     LEFT JOIN users cb ON a.created_by_id = cb.id
      WHERE a.id = $1`,
     [req.params.id]
   );
   if (!rows[0]) return res.status(404).json({ error: 'Not Found' });
-  res.json(rows[0]);
+  const { created_by_uid, created_by_name, account_manager_uid, account_manager_name, ...rest } = rows[0];
+  res.json({
+    ...rest,
+    account_manager_name,
+    account_manager: account_manager_uid ? { id: account_manager_uid, name: account_manager_name } : null,
+    created_by: created_by_uid ? { id: created_by_uid, name: created_by_name } : null,
+  });
 }
 
 async function updateAccount(req, res) {

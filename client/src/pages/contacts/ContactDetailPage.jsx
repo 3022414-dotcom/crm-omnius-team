@@ -144,6 +144,7 @@ export default function ContactDetailPage() {
       <InlineField label="Birthday" value={contact.birthday} type="date" readOnly={!canWrite} onSave={field('birthday')} />
       <InlineField label="Source" value={contact.source} type="select" options={SOURCES} readOnly={!canWrite} onSave={field('source')} />
       <InlineField label="Comments" value={contact.comments} type="textarea" readOnly={!canWrite} onSave={field('comments')} />
+      <InlineField label="Created By" value={contact.created_by?.name ?? '—'} type="text" readOnly={true} />
     </div>
   )
 

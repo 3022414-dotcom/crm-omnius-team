@@ -13,10 +13,10 @@ const schema = z.object({
 })
 
 const TYPE_OPTIONS = [
-  { value: 'call', label: 'Звонок' },
+  { value: 'call', label: 'Call' },
   { value: 'email', label: 'Email' },
-  { value: 'meeting', label: 'Встреча' },
-  { value: 'task', label: 'Задача' },
+  { value: 'meeting', label: 'Meeting' },
+  { value: 'task', label: 'Task' },
 ]
 
 export default function ActivityModal({ open, initial, onSave, onClose, loading }) {
@@ -52,7 +52,7 @@ export default function ActivityModal({ open, initial, onSave, onClose, loading 
         <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-background border border-border rounded-lg shadow-lg p-6 w-full max-w-md">
           <div className="flex items-center justify-between mb-4">
             <Dialog.Title className="text-base font-semibold">
-              {initial ? 'Редактировать активность' : 'Новая активность'}
+              {initial ? 'Edit Activity' : 'New Activity'}
             </Dialog.Title>
             <Dialog.Close asChild>
               <button className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent">
@@ -63,7 +63,7 @@ export default function ActivityModal({ open, initial, onSave, onClose, loading 
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Тип *</label>
+              <label className="block text-sm font-medium mb-1">Type *</label>
               <select
                 {...register('type')}
                 className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
@@ -76,7 +76,7 @@ export default function ActivityModal({ open, initial, onSave, onClose, loading 
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Описание</label>
+              <label className="block text-sm font-medium mb-1">Description</label>
               <textarea
                 {...register('description')}
                 className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-primary"
@@ -85,7 +85,7 @@ export default function ActivityModal({ open, initial, onSave, onClose, loading 
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Срок</label>
+              <label className="block text-sm font-medium mb-1">Due date</label>
               <input
                 type="date"
                 {...register('due_date')}
@@ -96,7 +96,7 @@ export default function ActivityModal({ open, initial, onSave, onClose, loading 
             {initial && (
               <label className="flex items-center gap-2 text-sm cursor-pointer">
                 <input type="checkbox" {...register('completed')} className="rounded" />
-                Выполнено
+                Completed
               </label>
             )}
 
@@ -106,14 +106,14 @@ export default function ActivityModal({ open, initial, onSave, onClose, loading 
                 className="px-4 py-2 text-sm rounded-md border border-border hover:bg-muted transition-colors"
                 onClick={onClose}
               >
-                Отмена
+                Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
                 className="px-4 py-2 text-sm rounded-md bg-primary text-white hover:bg-primary-dark transition-colors disabled:opacity-50"
               >
-                {loading ? 'Сохранение...' : 'Сохранить'}
+                {loading ? 'Saving...' : 'Save'}
               </button>
             </div>
           </form>

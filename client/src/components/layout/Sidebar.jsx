@@ -4,11 +4,11 @@ import { useAuthStore } from '../../stores/authStore'
 import { cn } from '../../lib/utils'
 
 const navItems = [
-  { to: '/accounts', label: 'Аккаунты', icon: Building2 },
-  { to: '/contacts', label: 'Контакты', icon: Users },
-  { to: '/deals', label: 'Сделки', icon: Briefcase },
-  { to: '/kanban', label: 'Канбан', icon: Kanban },
-  { to: '/activities', label: 'Активности', icon: Activity },
+  { to: '/accounts', label: 'Accounts', icon: Building2 },
+  { to: '/contacts', label: 'Contacts', icon: Users },
+  { to: '/deals', label: 'Deals', icon: Briefcase },
+  { to: '/kanban', label: 'Sales funnel', icon: Kanban },
+  { to: '/activities', label: 'Activities', icon: Activity },
 ]
 
 export default function Sidebar({ onClose }) {
@@ -16,7 +16,12 @@ export default function Sidebar({ onClose }) {
 
   return (
     <div className="flex h-full flex-col bg-card border-r border-border">
-      <div className="flex h-14 items-center px-4 border-b border-border">
+      <div className="flex h-14 items-center px-4 border-b border-border gap-2.5">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
+          <circle cx="14" cy="14" r="14" fill="black" />
+          <circle cx="14" cy="14" r="10" stroke="white" strokeWidth="3" fill="none" />
+          <circle cx="14" cy="14" r="4" fill="#E8392A" />
+        </svg>
         <span className="font-bold text-lg tracking-tight">omnius.team</span>
       </div>
 
@@ -50,7 +55,7 @@ export default function Sidebar({ onClose }) {
           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <LogOut size={14} />
-          Выйти
+          Log out
         </a>
       </div>
     </div>

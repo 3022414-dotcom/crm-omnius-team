@@ -10,8 +10,8 @@ import { formatDate } from '../../lib/date'
 import { Pencil, Trash2, CheckCircle, Circle, Filter } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
-const TYPE_LABELS = { call: 'Звонок', email: 'Email', meeting: 'Встреча', task: 'Задача' }
-const ENTITY_LABELS = { account: 'Аккаунт', contact: 'Контакт', deal: 'Сделка' }
+const TYPE_LABELS = { call: 'Call', email: 'Email', meeting: 'Meeting', task: 'Task' }
+const ENTITY_LABELS = { account: 'Account', contact: 'Contact', deal: 'Deal' }
 const ENTITY_PATHS = { account: 'accounts', contact: 'contacts', deal: 'deals' }
 
 export default function ActivitiesPage() {
@@ -49,36 +49,36 @@ export default function ActivitiesPage() {
 
   return (
     <div className="p-6 space-y-4">
-      <h1 className="text-xl font-semibold">Активности</h1>
+      <h1 className="text-xl font-semibold">Activities</h1>
 
       <div className="flex gap-3 flex-wrap items-center">
         <Filter size={14} className="text-muted-foreground" />
         <select className="px-3 py-1.5 text-sm rounded-md border border-border bg-background focus:outline-none focus:ring-1 focus:ring-primary" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
-          <option value="">Все типы</option>
+          <option value="">All types</option>
           {Object.entries(TYPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
         <select className="px-3 py-1.5 text-sm rounded-md border border-border bg-background focus:outline-none focus:ring-1 focus:ring-primary" value={completedFilter} onChange={(e) => setCompletedFilter(e.target.value)}>
-          <option value="">Все статусы</option>
-          <option value="false">Активные</option>
-          <option value="true">Выполненные</option>
+          <option value="">All statuses</option>
+          <option value="false">Active</option>
+          <option value="true">Completed</option>
         </select>
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Загрузка...</p>
+        <p className="text-sm text-muted-foreground">Loading...</p>
       ) : activities.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Нет активностей</p>
+        <p className="text-sm text-muted-foreground">No activities yet</p>
       ) : (
         <div className="overflow-x-auto rounded-md border border-border">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
                 <th className="px-4 py-2.5 w-8" />
-                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Тип</th>
-                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Описание</th>
-                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Связан с</th>
-                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Срок</th>
-                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Ответственный</th>
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Type</th>
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Description</th>
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Related to</th>
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Due date</th>
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Owner</th>
                 <th className="px-4 py-2.5" />
               </tr>
             </thead>
@@ -128,8 +128,8 @@ export default function ActivitiesPage() {
 
       <ConfirmDialog
         open={deleteId !== null}
-        title="Удалить активность?"
-        description="Это действие необратимо."
+        title="Delete activity?"
+        description="This action cannot be undone."
         loading={deleteMut.isPending}
         onConfirm={() => deleteMut.mutate(deleteId)}
         onCancel={() => setDeleteId(null)}

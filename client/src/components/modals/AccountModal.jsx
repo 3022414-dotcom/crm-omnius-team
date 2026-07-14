@@ -13,7 +13,7 @@ const INDUSTRIES = ['FinTech', 'MedTech', 'Agro', 'Oil and Gas', 'Commerce', 'Ho
 const SIZES = ['1-50', '51-200', '201-1000', '1000+']
 
 const schema = z.object({
-  name: z.string().min(1, 'Обязательное поле'),
+  name: z.string().min(1, 'Required'),
   type: z.string().optional(),
   location: z.string().optional(),
   industry: z.string().optional(),
@@ -51,8 +51,9 @@ export default function AccountModal({ open, initial, onSave, onClose, loading }
     defaultValues: emptyDefaults,
   })
 
-  const { data: usersData } = useQuery({ queryKey: ['users'], queryFn: getUsers })
+  const { data: usersData } = useQuery({ queryKey: ['users'], queryFn: getUsers, enabled: open })
   const users = Array.isArray(usersData) ? usersData : (usersData?.data ?? [])
+  const userLabel = (u) => u.name || u.email || u.id
 
   useEffect(() => {
     reset(initial ? {
@@ -78,7 +79,7 @@ export default function AccountModal({ open, initial, onSave, onClose, loading }
         <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-background border border-border rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-4">
             <Dialog.Title className="text-base font-semibold">
-              {initial ? 'Редактировать аккаунт' : 'Новый аккаунт'}
+              {initial ? 'Edit Account' : 'New Account'}
             </Dialog.Title>
             <Dialog.Close asChild>
               <button className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent">
@@ -88,76 +89,76 @@ export default function AccountModal({ open, initial, onSave, onClose, loading }
           </div>
 
           <form onSubmit={handleSubmit(onSave)} className="space-y-4">
-            <Field label="Название *" error={errors.name}>
+            <Field label="Name *" error={errors.name}>
               <input {...register('name')} className={inputClass} />
             </Field>
 
-            <Field label="Тип" error={errors.type}>
+            <Field label="Type" error={errors.type}>
               <select {...register('type')} className={inputClass}>
-                <option value="">— не выбрано —</option>
+                <option value="">— not selected —</option>
                 {ACCOUNT_TYPES.map(v => <option key={v} value={v}>{v}</option>)}
               </select>
             </Field>
 
-            <Field label="Локация" error={errors.location}>
-              <select {...register('location')} className={inputClass}>
-                <option value="">— не выбрано —</option>
-                {LOCATIONS.map(v => <option key={v} value={v}>{v}</option>)}
-              </select>
-            </Field>
-
-            <Field label="Отрасль" error={errors.industry}>
+            <Field label="Industry" error={errors.industry}>
               <select {...register('industry')} className={inputClass}>
-                <option value="">— не выбрано —</option>
+                <option value="">— not selected —</option>
                 {INDUSTRIES.map(v => <option key={v} value={v}>{v}</option>)}
               </select>
             </Field>
 
-            <Field label="Размер" error={errors.size}>
+            <Field label="Size" error={errors.size}>
               <select {...register('size')} className={inputClass}>
-                <option value="">— не выбрано —</option>
+                <option value="">— not selected —</option>
                 {SIZES.map(v => <option key={v} value={v}>{v}</option>)}
+              </select>
+            </Field>
+
+            <Field label="Location" error={errors.location}>
+              <select {...register('location')} className={inputClass}>
+                <option value="">— not selected —</option>
+                {LOCATIONS.map(v => <option key={v} value={v}>{v}</option>)}
               </select>
             </Field>
 
             <div className="flex items-center gap-2">
               <input {...register('is_target')} type="checkbox" id="is_target" className="h-4 w-4 rounded border-border" />
-              <label htmlFor="is_target" className="text-sm font-medium">Target (приоритетный клиент)</label>
+              <label htmlFor="is_target" className="text-sm font-medium">Target Account</label>
             </div>
 
-            <Field label="Account Manager" error={errors.account_manager_id}>
-              <select {...register('account_manager_id')} className={inputClass}>
-                <option value="">— не выбрано —</option>
-                {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-              </select>
+            <Field label="Website" error={errors.website}>
+              <input {...register('website')} type="url" className={inputClass} placeholder="https://..." />
             </Field>
 
-            <Field label="Сайт" error={errors.website}>
-              <input {...register('website')} type="url" className={inputClass} />
-            </Field>
-
-            <Field label="Телефон" error={errors.phone}>
+            <Field label="Phone" error={errors.phone}>
               <input {...register('phone')} className={inputClass} />
             </Field>
 
-            <Field label="Адрес" error={errors.address}>
+            <Field label="Address" error={errors.address}>
               <input {...register('address')} className={inputClass} />
             </Field>
 
-            <Field label="Account Storage (URL)" error={errors.account_storage}>
+            <Field label="Storage URL" error={errors.account_storage}>
               <input {...register('account_storage')} type="url" className={inputClass} placeholder="https://drive.google.com/..." />
             </Field>
 
-            <Field label="Комментарии" error={errors.notes}>
+            <Field label="Account Manager" error={errors.account_manager_id}>
+              <select {...register('account_manager_id')} className={inputClass}>
+                <option value="">— not selected —</option>
+                {users.map(u => <option key={u.id} value={u.id}>{userLabel(u)}</option>)}
+              </select>
+            </Field>
+
+            <Field label="Notes" error={errors.notes}>
               <textarea {...register('notes')} rows={3} className={inputClass} />
             </Field>
 
             <div className="flex justify-end gap-3 pt-2">
               <button type="button" className="px-4 py-2 text-sm rounded-md border border-border hover:bg-muted transition-colors" onClick={onClose}>
-                Отмена
+                Cancel
               </button>
               <button type="submit" disabled={loading} className="px-4 py-2 text-sm rounded-md bg-primary text-white hover:bg-primary-dark transition-colors disabled:opacity-50">
-                {loading ? 'Сохранение...' : 'Сохранить'}
+                {loading ? 'Saving...' : 'Save'}
               </button>
             </div>
           </form>

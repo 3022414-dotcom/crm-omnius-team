@@ -26,15 +26,15 @@ async function createDeal(req, res) {
   const { rows: [deal] } = await pool.query(
     `INSERT INTO deals (title, value, stage, close_date, account_id, owner_id,
                         location, deal_type, source, project_domain, description, our_services,
-                        deal_storage, expected_start_date, currency, lost_reason)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+                        deal_storage, expected_start_date, currency, lost_reason, created_by_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
      RETURNING *`,
     [title, req.body.value || null, stage, req.body.close_date || null, account_id, req.user.id,
      req.body.location || null, req.body.deal_type || null, req.body.source || null,
      req.body.project_domain || null, req.body.description || null,
      req.body.our_services || null, req.body.deal_storage || null,
      req.body.expected_start_date || null, req.body.currency || 'RUB',
-     req.body.lost_reason || null]
+     req.body.lost_reason || null, req.user.id]
   );
   return res.status(201).json(deal);
 }
@@ -116,10 +116,12 @@ async function getDealById(req, res) {
             d.our_services, d.deal_storage, d.currency, d.lost_reason,
             d.account_id, d.owner_id, d.created_at, d.updated_at,
             a.name AS account_name,
-            u.name AS owner_name
+            u.name AS owner_name,
+            cb.id AS created_by_uid, cb.name AS created_by_name
      FROM deals d
      LEFT JOIN accounts a ON d.account_id = a.id
      LEFT JOIN users   u ON d.owner_id   = u.id
+     LEFT JOIN users  cb ON d.created_by_id = cb.id
      WHERE d.id = $1`,
     [id]
   );
@@ -153,6 +155,7 @@ async function getDealById(req, res) {
     owner_id: row.owner_id,
     account: row.account_id ? { id: row.account_id, name: row.account_name } : null,
     owner: { id: row.owner_id, name: row.owner_name },
+    created_by: row.created_by_uid ? { id: row.created_by_uid, name: row.created_by_name } : null,
     contacts,
     created_at: row.created_at,
     updated_at: row.updated_at,
@@ -203,10 +206,12 @@ async function updateDeal(req, res) {
             d.our_services, d.deal_storage, d.currency, d.lost_reason,
             d.account_id, d.owner_id, d.created_at, d.updated_at,
             a.name AS account_name,
-            u.name AS owner_name
+            u.name AS owner_name,
+            cb.id AS created_by_uid, cb.name AS created_by_name
      FROM deals d
      LEFT JOIN accounts a ON d.account_id = a.id
      LEFT JOIN users   u ON d.owner_id   = u.id
+     LEFT JOIN users  cb ON d.created_by_id = cb.id
      WHERE d.id = $1`,
     [id]
   );
@@ -232,6 +237,7 @@ async function updateDeal(req, res) {
     owner_id: row.owner_id,
     account: row.account_id ? { id: row.account_id, name: row.account_name } : null,
     owner: { id: row.owner_id, name: row.owner_name },
+    created_by: row.created_by_uid ? { id: row.created_by_uid, name: row.created_by_name } : null,
     created_at: row.created_at,
     updated_at: row.updated_at,
   });

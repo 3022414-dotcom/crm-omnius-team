@@ -6,6 +6,8 @@ import { ChevronLeft, Pencil, Plus } from 'lucide-react'
 import { getDeal, updateDeal, getDealActivities, updateDealContact, addDealContact } from '../../api/deals'
 import { getAccounts } from '../../api/accounts'
 import { getContacts } from '../../api/contacts'
+import { getUsers } from '../../api/users'
+import { formatDate, formatAmount } from '../../lib/date'
 import { useAuthStore } from '../../stores/authStore'
 import DetailLayout from '../../components/detail/DetailLayout'
 import InlineField from '../../components/detail/InlineField'
@@ -21,7 +23,7 @@ const DEAL_TYPES = ['New Client', 'New Project with existing client', 'Upsale']
 const SOURCES = ['Founder', 'Marketing', 'Organic', 'BizDev', 'Customer', 'Referral', 'Agent', 'Event', 'Tender Platforms', 'Employee']
 const LOCATIONS = ['Russia', 'Belorussia', 'Kazakhstan', 'Armenia']
 const PROJECT_DOMAINS = ['FinTech', 'MedTech', 'Agro', 'Oil and Gas', 'Commerce', 'HoReCa', 'Customer services', 'Production']
-const OUR_SERVICES = ['AI Consulting', 'AI Outsource', 'AI Outstaff', 'AI Course', 'AI Product']
+const OUR_SERVICES = ['Workshop', 'Webinar', 'Consulting', 'POC', 'Development', 'Accelerator', 'Performance']
 
 function DealContactRow({ dealId, contact, canWrite }) {
   const [editing, setEditing] = useState(false)
@@ -179,6 +181,14 @@ export default function DealDetailPage() {
   })
   const allAccounts = accountsData?.data ?? []
 
+  const { data: usersData } = useQuery({
+    queryKey: ['users'],
+    queryFn: getUsers,
+    enabled: canWrite,
+  })
+  const allUsers = Array.isArray(usersData) ? usersData : (usersData?.data ?? [])
+  const userLabel = (u) => u.name || u.email || u.id
+
   if (isLoading) return <div className="p-6 text-sm text-muted-foreground">Loading...</div>
   if (!deal) return <div className="p-6 text-sm text-destructive">Deal not found</div>
 
@@ -215,7 +225,7 @@ export default function DealDetailPage() {
 
   const leftPanel = (
     <div className="p-4 space-y-0">
-      <InlineField label="Title" value={deal.title} type="text" required readOnly={!canWrite} onSave={field('title')} />
+      <InlineField label="Deal Name" value={deal.title} type="text" required readOnly={!canWrite} onSave={field('title')} />
       <InlineField label="Stage" value={deal.stage} type="select" options={STAGES} readOnly={!canWrite} onSave={field('stage')} />
       <InlineField
         label="Account"
@@ -226,19 +236,34 @@ export default function DealDetailPage() {
         readOnly={!canWrite}
         onSave={(val) => save({ account_id: val || null })}
       />
-      <div className="h-px bg-border my-2" />
-      <InlineField label="Value" value={deal.value != null ? String(deal.value) : null} type="text" readOnly={!canWrite} onSave={(val) => save({ value: val ? Number(val) : null })} />
-      <InlineField label="Currency" value={deal.currency} type="select" options={CURRENCIES} readOnly={!canWrite} onSave={field('currency')} />
-      <InlineField label="Close Date" value={deal.close_date} type="date" readOnly={!canWrite} onSave={field('close_date')} />
-      <InlineField label="Expected Start" value={deal.expected_start_date} type="date" readOnly={!canWrite} onSave={field('expected_start_date')} />
-      <div className="h-px bg-border my-2" />
+      <InlineField label="Location" value={deal.location} type="select" options={LOCATIONS} readOnly={!canWrite} onSave={field('location')} />
       <InlineField label="Deal Type" value={deal.deal_type} type="select" options={DEAL_TYPES} readOnly={!canWrite} onSave={field('deal_type')} />
       <InlineField label="Source" value={deal.source} type="select" options={SOURCES} readOnly={!canWrite} onSave={field('source')} />
-      <InlineField label="Location" value={deal.location} type="select" options={LOCATIONS} readOnly={!canWrite} onSave={field('location')} />
       <InlineField label="Project Domain" value={deal.project_domain} type="select" options={PROJECT_DOMAINS} readOnly={!canWrite} onSave={field('project_domain')} />
-      <InlineMultiSelect label="Our Services" value={deal.our_services ?? []} options={OUR_SERVICES} readOnly={!canWrite} onSave={field('our_services')} />
-      <InlineField label="Storage URL" value={deal.deal_storage} type="url" readOnly={!canWrite} onSave={field('deal_storage')} />
       <InlineField label="Description" value={deal.description} type="textarea" readOnly={!canWrite} onSave={field('description')} />
+      <InlineMultiSelect label="Our Services" value={deal.our_services ?? []} options={OUR_SERVICES} readOnly={!canWrite} onSave={field('our_services')} />
+      <InlineField
+        label="Amount"
+        value={deal.value != null ? formatAmount(deal.value) : null}
+        type="text"
+        readOnly={!canWrite}
+        onSave={(val) => save({ value: val ? Number(String(val).replace(/[\s ]/g, '')) : null })}
+      />
+      <InlineField label="Currency" value={deal.currency} type="select" options={CURRENCIES} readOnly={!canWrite} onSave={field('currency')} />
+      <InlineField label="Storage URL" value={deal.deal_storage} type="url" readOnly={!canWrite} onSave={field('deal_storage')} />
+      <InlineField
+        label="Deal Owner"
+        value={deal.owner_id ?? ''}
+        displayValue={deal.owner?.name ?? '—'}
+        type="select"
+        optionObjects={[{ value: '', label: '—' }, ...allUsers.map((u) => ({ value: u.id, label: userLabel(u) }))]}
+        readOnly={!canWrite}
+        onSave={(val) => save({ owner_id: val || null })}
+      />
+      <InlineField label="Created By" value={deal.created_by?.name ?? '—'} type="text" readOnly={true} />
+      <InlineField label="Created Date" value={deal.created_at ? formatDate(deal.created_at) : '—'} type="text" readOnly={true} />
+      <InlineField label="Expected Start Date" value={deal.expected_start_date} type="date" readOnly={!canWrite} onSave={field('expected_start_date')} />
+      <InlineField label="Close Date" value={deal.close_date} type="date" readOnly={!canWrite} onSave={field('close_date')} />
       {deal.stage === 'lost' && (
         <InlineField label="Lost Reason" value={deal.lost_reason} type="textarea" readOnly={!canWrite} onSave={field('lost_reason')} />
       )}

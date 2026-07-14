@@ -3,7 +3,7 @@ const fs = require('fs');
 const { randomUUID } = require('crypto');
 const pool = require('../db/pool');
 
-const CONTACT_FIELDS = 'id, first_name, last_name, email, email_corp, email_personal, phone, position, photo_path, telegram, linkedin, facebook, location, language, preferred_communication, birthday, comments, source, account_id, owner_id, created_at, updated_at';
+const CONTACT_FIELDS = 'id, first_name, last_name, email, email_corp, email_personal, phone, position, photo_path, telegram, linkedin, facebook, location, language, preferred_communication, birthday, comments, source, account_id, owner_id, created_by_id, created_at, updated_at';
 const UPDATABLE_FIELDS = ['first_name', 'last_name', 'email', 'email_corp', 'email_personal', 'phone', 'position', 'account_id', 'telegram', 'linkedin', 'facebook', 'location', 'language', 'preferred_communication', 'birthday', 'comments', 'source'];
 
 async function savePhoto(contactId, file) {
@@ -36,14 +36,14 @@ async function createContact(req, res) {
 
   const { rows } = await pool.query(
     `INSERT INTO contacts (first_name, last_name, email, email_corp, email_personal, phone, position, account_id,
-                           telegram, linkedin, facebook, location, language, preferred_communication, birthday, comments, source, owner_id)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+                           telegram, linkedin, facebook, location, language, preferred_communication, birthday, comments, source, owner_id, created_by_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
      RETURNING ${CONTACT_FIELDS}`,
     [first_name.trim(), last_name.trim(), email || null, email_corp || null, email_personal || null,
      phone || null, position || null, account_id || null,
      telegram || null, linkedin || null, facebook || null,
      location || null, language || null, preferred_communication || null,
-     birthday || null, comments || null, source || null, req.user.id]
+     birthday || null, comments || null, source || null, req.user.id, req.user.id]
   );
   res.status(201).json(rows[0]);
 }
@@ -92,14 +92,20 @@ async function getContactById(req, res) {
             c.location, c.language, c.preferred_communication,
             c.birthday, c.comments, c.source,
             c.account_id, c.owner_id, c.created_at, c.updated_at,
-            a.name AS account_name
+            a.name AS account_name,
+            cb.id AS created_by_uid, cb.name AS created_by_name
      FROM contacts c
      LEFT JOIN accounts a ON c.account_id = a.id
+     LEFT JOIN users cb ON c.created_by_id = cb.id
      WHERE c.id = $1`,
     [req.params.id]
   );
   if (!rows[0]) return res.status(404).json({ error: 'Not Found' });
-  res.json(rows[0]);
+  const { created_by_uid, created_by_name, ...rest } = rows[0];
+  res.json({
+    ...rest,
+    created_by: created_by_uid ? { id: created_by_uid, name: created_by_name } : null,
+  });
 }
 
 async function listContactsByAccount(req, res) {

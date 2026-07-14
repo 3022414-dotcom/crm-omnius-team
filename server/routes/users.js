@@ -5,7 +5,7 @@ const { getMe, listUsers, getUserById, updateUserRole } = require('../controller
 const router = express.Router();
 
 router.get('/me', getMe);
-router.get('/', requireRole(['admin']), listUsers);
+router.get('/', listUsers);
 router.get('/:id', requireRole(['admin']), getUserById);
 router.patch('/:id/role', requireRole(['admin']), updateUserRole);
 
