@@ -20,6 +20,11 @@ const PgSession = require('connect-pg-simple')(session);
 
 const app = express();
 
+// Behind Caddy (TLS) → nginx → backend. Trust the proxy chain so req.secure
+// reflects X-Forwarded-Proto; otherwise Express won't set the secure session
+// cookie over the internal HTTP hop and every /api/v1 request is unauthenticated.
+app.set('trust proxy', 1);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
