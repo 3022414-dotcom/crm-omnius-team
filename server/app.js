@@ -7,6 +7,7 @@ const pool = require('./db/pool');
 const { ensureAuthenticated } = require('./middleware/auth');
 const path = require('path');
 const authRouter = require('./routes/auth');
+const healthRouter = require('./routes/health');
 const usersRouter = require('./routes/users');
 const accountsRouter = require('./routes/accounts');
 const contactsRouter = require('./routes/contacts');
@@ -78,6 +79,9 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+
+// Public health probe — must stay BEFORE the /api/v1 auth guard (FR-017).
+app.use('/healthz', healthRouter);
 
 app.use('/api/v1', ensureAuthenticated);
 app.use('/api/v1/users', usersRouter);
