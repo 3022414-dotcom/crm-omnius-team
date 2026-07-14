@@ -1,0 +1,7 @@
+# Edge reverse proxy with automatic Let's Encrypt (FR-032, FR-033).
+# $DOMAIN is provided via the caddy service environment in docker-compose.prod.yml.
+# Caddy obtains and auto-renews the TLS certificate; certs persist in the caddy_data volume.
+{$DOMAIN} {
+	encode gzip
+	reverse_proxy frontend:80
+}

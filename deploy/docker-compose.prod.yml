@@ -1,0 +1,64 @@
+# Production topology for the VPS (FR-013, contracts/deploy-compose.md).
+# App services pull images from Selectel CR by ${IMAGE_TAG} — no build on the VPS.
+# Interpolated vars (IMAGE_TAG, REGISTRY_*, DOMAIN, POSTGRES_*) come from the .env
+# rendered by scripts/ci/deploy-remote.sh.
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: omnius_crm_caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+
+  frontend:
+    image: ${REGISTRY_HOST}/${REGISTRY_NAMESPACE}/crm-frontend:${IMAGE_TAG}
+    container_name: omnius_crm_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+  backend:
+    image: ${REGISTRY_HOST}/${REGISTRY_NAMESPACE}/crm-backend:${IMAGE_TAG}
+    container_name: omnius_crm_backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      # DATABASE_URL derived from POSTGRES_* to mirror the root docker-compose.yml (U1).
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - uploads:/app/uploads
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: omnius_crm_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:
+  uploads:
