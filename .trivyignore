@@ -1,0 +1,7 @@
+# .trivyignore — documented, time-boxed exceptions for Trivy scans (FR-005, research D3).
+# The PR security check hard-fails on HIGH/CRITICAL vulns and committed secrets;
+# add an exception here ONLY with a comment stating the CVE, why it can't be fixed yet,
+# the owner, and a review-by date. Every entry weakens the gate — keep this list short.
+#
+# Example:
+#   CVE-2024-XXXXX  # transitive via <pkg>, no fix upstream yet; review by 2026-09-01 (owner: @you)
