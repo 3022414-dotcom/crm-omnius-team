@@ -8,8 +8,8 @@ All values are referenced by name in workflows; nothing is committed (FR-028). S
 
 | Name | Scope | Used by | Purpose |
 |------|-------|---------|---------|
-| `SELECTEL_CR_USERNAME` | deploy | build-push | Login to `cr.selcloud.ru` |
-| `SELECTEL_CR_PASSWORD` | deploy | build-push | Registry password/token |
+| `SELECTEL_CR_USERNAME` | deploy | build-push, deploy | Login to `cr.selcloud.ru` (CI push **and** VPS pull) |
+| `SELECTEL_CR_PASSWORD` | deploy | build-push, deploy | Registry password/token |
 | `SSH_PRIVATE_KEY` | deploy | deploy | Key-based SSH to the VPS |
 | `SSH_KNOWN_HOSTS` | deploy | deploy | Pin VPS host key (avoid MITM / prompt) |
 | `OPENROUTER_API_KEY` | notify | notify | OpenRouter API (OpenAI-compatible) for the LLM change summary |
