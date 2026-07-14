@@ -111,7 +111,7 @@ export default function KanbanPage() {
 
   return (
     <div className="p-6 space-y-4">
-      <h1 className="text-xl font-semibold">Канбан</h1>
+      <h1 className="text-xl font-semibold">Sales funnel</h1>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}

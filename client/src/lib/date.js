@@ -18,5 +18,5 @@ export function formatDate(dateStr) {
 
 export function formatAmount(amount) {
   if (amount == null) return '—'
-  return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(amount)
+  return new Intl.NumberFormat('ru-RU', { style: 'decimal', maximumFractionDigits: 0 }).format(amount)
 }

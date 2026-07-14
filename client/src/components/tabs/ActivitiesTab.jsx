@@ -9,7 +9,7 @@ import { formatDate } from '../../lib/date'
 import { Plus, Pencil, Trash2, CheckCircle, Circle } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
-const TYPE_LABELS = { call: 'Звонок', email: 'Email', meeting: 'Встреча', task: 'Задача' }
+const TYPE_LABELS = { call: 'Call', email: 'Email', meeting: 'Meeting', task: 'Task' }
 
 export default function ActivitiesTab({ entityType, entityId, fetchFn }) {
   const { user } = useAuthStore()
@@ -27,20 +27,20 @@ export default function ActivitiesTab({ entityType, entityId, fetchFn }) {
 
   const createMut = useMutation({
     mutationFn: (data) => createActivity({ ...data, entity_type: entityType, entity_id: entityId }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: key }); setModalOpen(false); toast.success('Активность создана') },
-    onError: () => toast.error('Не удалось создать активность'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: key }); setModalOpen(false); toast.success('Activity created') },
+    onError: () => toast.error('Failed to create activity'),
   })
 
   const updateMut = useMutation({
     mutationFn: ({ id, ...data }) => updateActivity(id, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: key }); setEditing(null); toast.success('Активность обновлена') },
-    onError: () => toast.error('Не удалось обновить активность'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: key }); setEditing(null); toast.success('Activity updated') },
+    onError: () => toast.error('Failed to update activity'),
   })
 
   const deleteMut = useMutation({
     mutationFn: (id) => deleteActivity(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: key }); setDeleteId(null); toast.success('Активность удалена') },
-    onError: () => toast.error('Не удалось удалить активность'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: key }); setDeleteId(null); toast.success('Activity deleted') },
+    onError: () => toast.error('Failed to delete activity'),
   })
 
   const toggleComplete = (act) =>
@@ -56,13 +56,13 @@ export default function ActivitiesTab({ entityType, entityId, fetchFn }) {
           onClick={() => setModalOpen(true)}
         >
           <Plus size={14} />
-          Добавить активность
+          Add activity
         </button>
       )}
 
       <div className="space-y-2">
         {activities.length === 0 && (
-          <p className="text-sm text-muted-foreground">Нет активностей</p>
+          <p className="text-sm text-muted-foreground">No activities yet</p>
         )}
         {activities.map((act) => (
           <div
@@ -123,8 +123,8 @@ export default function ActivitiesTab({ entityType, entityId, fetchFn }) {
 
       <ConfirmDialog
         open={deleteId !== null}
-        title="Удалить активность?"
-        description="Это действие необратимо."
+        title="Delete activity?"
+        description="This action cannot be undone."
         loading={deleteMut.isPending}
         onConfirm={() => deleteMut.mutate(deleteId)}
         onCancel={() => setDeleteId(null)}

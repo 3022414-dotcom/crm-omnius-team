@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git commit -m ' *)",
+      "Bash(bash .specify/extensions/git/scripts/bash/create-new-feature.sh --json --short-name \"notes-crud\" \"F-07 Заметки \\(Notes\\)\")",
+      "Bash(.specify/extensions/git/scripts/bash/auto-commit.sh after_analyze)",
+      "Bash(python3 -c ' *)",
+      "Bash(node -e \"const c = require\\('./server/controllers/notesController'\\); console.log\\(Object.keys\\(c\\)\\)\")",
+      "Bash(node -e \"require\\('./server/app'\\); console.log\\('app.js OK'\\)\")",
+      "Bash(.specify/extensions/git/scripts/bash/create-new-feature.sh --json --short-name \"attachments-crud\" \"F-08 Вложения \\(Attachments\\) — загрузка и хранение файлов к аккаунтам, контактам и сделкам. Полиморфная ассоциация. Локальное хранение.\")",
+      "Bash(node -e \"require\\('./server/middleware/auth'\\)\")",
+      "Bash(node -e \"const c = require\\('./server/controllers/attachmentsController'\\); console.log\\(Object.keys\\(c\\)\\);\")",
+      "Bash(node -e \"require\\('./server/app'\\); console.log\\('app loaded OK'\\)\")",
+      "Bash(node -e \"require\\('./server/app'\\); console.log\\('OK'\\)\")",
+      "Bash(node -e \"const r = require\\('./server/routes/attachments'\\); console.log\\('routes OK'\\)\")",
+      "Bash(.specify/extensions/git/scripts/bash/create-new-feature.sh --json --short-name \"activities-crud\" \"F-09 Активности \\(Activities\\)\")",
+      "Bash(node -e \"require\\('./server/controllers/activitiesController'\\)\")",
+      "Bash(node -e ' *)",
+      "Bash(bash .specify/extensions/git/scripts/bash/create-new-feature.sh --json --short-name \"kanban-board\" \"F-10 Kanban-доска\")",
+      "Bash(node -e \"const c = require\\('./server/controllers/dealsController'\\); console.log\\(Object.keys\\(c\\).join\\(', '\\)\\)\")",
+      "Bash(node -e \"require\\('./server/routes/deals'\\)\")",
+      "Bash(node -e \"const c = require\\('./server/controllers/dealsController'\\); const expected = ['createDeal','listDeals','getDealById','updateDeal','linkContact','unlinkContact','deleteDeal','getKanbanDeals','updateDealStage']; const keys = Object.keys\\(c\\); const missing = expected.filter\\(k => !keys.includes\\(k\\)\\); console.log\\('Exports:', keys.join\\(', '\\)\\); console.log\\('Missing:', missing.length ? missing.join\\(', '\\) : 'none'\\);\")",
+      "Bash(.specify/extensions/git/scripts/bash/create-new-feature.sh --json --short-name \"crm-frontend\" \"F-11 UI/UX общий — фронтенд CRM\")",
+      "Bash(.specify/extensions/git/scripts/bash/auto-commit.sh after_specify)",
+      "WebFetch(domain:omnius.team)",
+      "Bash(npm create *)",
+      "Bash(npx tailwindcss *)",
+      "Bash(node_modules/.bin/tailwindcss init *)",
+      "Bash(/Users/shevtsovajulia/Development/crm-omnius-team/client/node_modules/.bin/tailwindcss init *)",
+      "Bash(node -e \"const z = require\\('zod'\\); console.log\\(z.version || 'no version'\\)\")",
+      "Bash(npm list *)",
+      "Bash(node -e \"const l = require\\('./node_modules/lucide-react'\\); const keys = Object.keys\\(l\\).filter\\(k => k.toLowerCase\\(\\).includes\\('kanban'\\) || k.toLowerCase\\(\\).includes\\('layout'\\)\\); console.log\\(keys.slice\\(0,10\\)\\)\")"
+    ]
+  }
+}

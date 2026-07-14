@@ -63,5 +63,5 @@
 Фронтенд: **React + Vite** (SPA) — зафиксировано в F-11.
 
 <!-- SPECKIT START -->
-**Active feature plan**: [specs/014-notes-image-paste/plan.md](specs/014-notes-image-paste/plan.md)
+**Active feature plan**: [specs/015-entity-fields-fix/plan.md](specs/015-entity-fields-fix/plan.md)
 <!-- SPECKIT END -->

@@ -171,6 +171,7 @@ export default function AccountDetailPage() {
         readOnly={!canWrite}
         onSave={(val) => save({ account_manager_id: val || null })}
       />
+      <InlineField label="Created By" value={account.created_by?.name ?? '—'} type="text" readOnly={true} />
       <InlineField label="Notes" value={account.notes} type="textarea" readOnly={!canWrite} onSave={field('notes')} />
     </div>
   )
