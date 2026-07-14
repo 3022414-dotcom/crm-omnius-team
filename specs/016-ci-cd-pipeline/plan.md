@@ -35,7 +35,7 @@ Technical approach favors the constitution's "простота прежде вс
 - **CI platform**: GitHub Actions (repo on GitHub).
 - **Edge proxy**: Caddy 2 (automatic Let's Encrypt, one-line config) — chosen over Traefik/nginx+certbot for simplicity.
 - **Scanner**: Trivy filesystem scan with `--scanners vuln,secret`, `--severity HIGH,CRITICAL`, `--exit-code 1` — one tool covers both required scan types.
-- **LLM**: OpenRouter (OpenAI-compatible Chat Completions API), model `anthropic/claude-3.5-haiku`, via a single `curl` — cheap, fast, sufficient for commit summaries. Secret: `OPENROUTER_API_KEY`.
+- **LLM**: OpenRouter (OpenAI-compatible Chat Completions API), model `anthropic/claude-haiku-4.5`, via a single `curl` — cheap, fast, sufficient for commit summaries. Secret: `OPENROUTER_API_KEY`.
 - **Registry layout**: `cr.selcloud.ru/<namespace>/crm-backend:<VERSION>` and `.../crm-frontend:<VERSION>`.
 - **Health check**: new unauthenticated `GET /healthz` on backend (DB ping), exposed through nginx; deploy checks `https://<domain>/healthz`.
 - **App runtime secrets**: held in GitHub Actions secrets; the deploy job renders the VPS `.env` from them each run (satisfies FR-015/FR-016 without committing anything).
