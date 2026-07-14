@@ -80,6 +80,8 @@ jobs:
             "IMAGE_TAG='${{ needs.build-push.outputs.image_tag }}' \
              REGISTRY_HOST='${{ vars.REGISTRY_HOST }}' \
              REGISTRY_NAMESPACE='${{ vars.REGISTRY_NAMESPACE }}' \
+             REGISTRY_USERNAME='${{ secrets.SELECTEL_CR_USERNAME }}' \
+             REGISTRY_PASSWORD='${{ secrets.SELECTEL_CR_PASSWORD }}' \
              DOMAIN='${{ vars.DOMAIN }}' \
              STAND_URL='${{ vars.STAND_URL }}' \
              DEPLOY_PATH='${{ vars.DEPLOY_PATH }}' \

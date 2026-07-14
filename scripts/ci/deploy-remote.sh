@@ -52,8 +52,18 @@ log "Deploying ${IMAGE_TAG} (previous: ${PREVIOUS_TAG:-<none>})"
 
 HEALTH_URL="${STAND_URL%/}/healthz"
 
-# 3. Pull → migrate (before cutover) → up.
-IMAGE_TAG="$IMAGE_TAG" $COMPOSE pull || die "image pull failed for ${IMAGE_TAG}"
+# 3. Authenticate to the private registry so `compose pull` can fetch images (FR-012).
+#    The VPS is a separate host from the CI runner, so it needs its own login.
+if [ -n "${REGISTRY_USERNAME:-}" ] && [ -n "${REGISTRY_PASSWORD:-}" ]; then
+  log "docker login ${REGISTRY_HOST}"
+  printf '%s' "$REGISTRY_PASSWORD" | docker login "$REGISTRY_HOST" -u "$REGISTRY_USERNAME" --password-stdin \
+    || die "docker login to ${REGISTRY_HOST} failed"
+else
+  warn "REGISTRY_USERNAME/PASSWORD not provided — relying on an existing docker login on the VPS"
+fi
+
+# 4. Pull → migrate (before cutover) → up.
+IMAGE_TAG="$IMAGE_TAG" $COMPOSE pull || die "image pull failed for ${IMAGE_TAG} (registry auth?)"
 # Migrations run against the NEW image before it serves traffic (FR-014). Halt on failure.
 IMAGE_TAG="$IMAGE_TAG" $COMPOSE run --rm backend npm run migrate \
   || die "database migration failed for ${IMAGE_TAG} — deploy halted before cutover"
