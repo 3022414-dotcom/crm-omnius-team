@@ -31,7 +31,7 @@ Resolves the open technical choices left as assumptions in the spec. Each decisi
 
 ## D4. LLM for commit summarization
 
-- **Decision**: **OpenRouter** (the team's standard for such tasks), OpenAI-compatible Chat Completions API, model `anthropic/claude-3.5-haiku`, called via a single `curl` to `https://openrouter.ai/api/v1/chat/completions` from `scripts/ci/summarize-commits.sh`. Input = commit subjects for the deployed range; output = a short bulleted change summary. `OPENROUTER_API_KEY` stored as a GitHub secret.
+- **Decision**: **OpenRouter** (the team's standard for such tasks), OpenAI-compatible Chat Completions API, model `anthropic/claude-haiku-4.5`, called via a single `curl` to `https://openrouter.ai/api/v1/chat/completions` from `scripts/ci/summarize-commits.sh`. Input = commit subjects for the deployed range; output = a short bulleted change summary. `OPENROUTER_API_KEY` stored as a GitHub secret.
 - **Rationale**: The team already provisions an OpenRouter key for LLM tasks — one billing/relationship to manage. OpenRouter is OpenAI-compatible (`Authorization: Bearer`, `.choices[0].message.content`); Haiku via OpenRouter is fast and cheap. No SDK/runtime added — just `curl` + `jq`.
 - **Fallback (FR-025)**: On any non-200, timeout, missing key, or empty output, the script emits the raw commit subject list so the notification is never dropped.
 - **Commit range**: `git log <before>..<after>` where `before`/`after` come from the push event (`github.event.before` / `github.sha`); for the first push or a forced range, fall back to the last N commits. Large ranges are truncated (cap on commits) before sending to the LLM.

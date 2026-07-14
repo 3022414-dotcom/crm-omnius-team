@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # summarize-commits.sh
 # Prints a short, human-readable change summary for the deployed commit range to stdout.
-# Uses OpenRouter (OpenAI-compatible Chat Completions API), model anthropic/claude-3.5-haiku;
+# Uses OpenRouter (OpenAI-compatible Chat Completions API), model anthropic/claude-haiku-4.5;
 # falls back to raw commit subjects on any error, missing key, or empty output (FR-023, FR-025, research D4).
 #
 # Env: BEFORE, AFTER (commit range), OPENROUTER_API_KEY, optional MAX_COMMITS.
@@ -37,7 +37,7 @@ PROMPT="Составь краткий список изменений на ру�
 Коммиты:
 ${SUBJECTS}"
 
-REQ="$(jq -n --arg m "anthropic/claude-3.5-haiku" --arg p "$PROMPT" \
+REQ="$(jq -n --arg m "anthropic/claude-haiku-4.5" --arg p "$PROMPT" \
   '{model:$m, max_tokens:400, messages:[{role:"user", content:$p}]}')"
 
 # OpenRouter is OpenAI-compatible: Bearer auth, /chat/completions, .choices[0].message.content
