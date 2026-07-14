@@ -22,19 +22,19 @@ else
   warn "no valid BEFORE ref — using last ${MAX_COMMITS} commits"
   SUBJECTS="$(git log --no-merges --pretty=format:'- %s' -n "$MAX_COMMITS" 2>/dev/null || true)"
 fi
-[ -n "$SUBJECTS" ] || SUBJECTS="- (no commits found for range)"
+[ -n "$SUBJECTS" ] || SUBJECTS="- (коммиты не найдены)"
 
 fallback() {
-  printf '(commit subjects — AI summary unavailable)\n%s\n' "$SUBJECTS"
+  printf '_(сводка ИИ недоступна — список коммитов)_\n%s\n' "$SUBJECTS"
 }
 
 if [ -z "${OPENROUTER_API_KEY:-}" ]; then warn "no OPENROUTER_API_KEY; using fallback"; fallback; exit 0; fi
 command -v curl >/dev/null 2>&1 || { warn "curl missing; fallback"; fallback; exit 0; }
 command -v jq   >/dev/null 2>&1 || { warn "jq missing; fallback"; fallback; exit 0; }
 
-PROMPT="Summarize these git commits into a short, human-readable changelog for a Slack deploy notification. Use 3-8 concise bullet points grouped by theme. Focus on user-facing and notable changes. Respond with only the bullet list.
+PROMPT="Составь краткий список изменений на русском языке для уведомления о деплое в Slack по этим git-коммитам. 3–8 ёмких пунктов, сгруппируй по смыслу, только маркированный список (каждый пункт с '- '), без вступления и заключения.
 
-Commits:
+Коммиты:
 ${SUBJECTS}"
 
 REQ="$(jq -n --arg m "anthropic/claude-3.5-haiku" --arg p "$PROMPT" \

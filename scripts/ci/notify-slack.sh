@@ -26,35 +26,39 @@ else
   SUMMARY="(no change summary available)"
 fi
 
-if [ "$STATUS" = "success" ]; then
-  BADGE=":white_check_mark:"
-  HEADER="CRM deployed — v${VERSION}"
-  STAND_FIELD="*Stand:*\n<${STAND_URL}|${STAND_URL#https://}>"
-else
-  BADGE=":x:"
-  HEADER="CRM deploy FAILED — v${VERSION}"
-  STAND_FIELD="*Stand:*\nprevious version still live"
-fi
+case "$STATUS" in
+  success)
+    HEADER="✅ CRM задеплоен — v${VERSION}"
+    STATUS_RU="Успех"
+    STAND_LINE="*Стенд:* <${STAND_URL}|${STAND_URL#https://}>"
+    ;;
+  rolled_back)
+    HEADER="↩️ CRM: откат на предыдущую версию — v${VERSION}"
+    STATUS_RU="Откат"
+    STAND_LINE="*Стенд:* <${STAND_URL}|${STAND_URL#https://}>"
+    ;;
+  *)
+    HEADER="❌ CRM: деплой упал — v${VERSION}"
+    STATUS_RU="Провал"
+    STAND_LINE="*Стенд:* предыдущая версия работает"
+    ;;
+esac
+
+# Single mrkdwn block, one fact per line. Real newlines via printf (jq --arg keeps them literally).
+BODY="$(printf '*Статус:* %s\n*Версия:* %s\n%s\n*Запуск:* <%s|открыть>' \
+  "$STATUS_RU" "$VERSION" "$STAND_LINE" "$RUN_URL")"
 
 PAYLOAD="$(jq -n \
-  --arg header "${BADGE} ${HEADER}" \
-  --arg status "$STATUS" \
-  --arg version "$VERSION" \
-  --arg stand "$STAND_FIELD" \
-  --arg run "*Run:*\n<${RUN_URL}|open>" \
-  --arg summary "*Changes:*
-${SUMMARY}" \
-  --arg ctx "${COMMIT_RANGE}" \
+  --arg header "$HEADER" \
+  --arg body "$BODY" \
+  --arg summary "$SUMMARY" \
+  --arg ctx "$COMMIT_RANGE" \
   '{
      blocks: [
-       { type: "header", text: { type: "plain_text", text: $header } },
-       { type: "section", fields: [
-         { type: "mrkdwn", text: ("*Status:*\n" + $status) },
-         { type: "mrkdwn", text: ("*Version:*\n" + $version) },
-         { type: "mrkdwn", text: $stand },
-         { type: "mrkdwn", text: $run }
-       ]},
-       { type: "section", text: { type: "mrkdwn", text: $summary } },
+       { type: "header",  text: { type: "plain_text", text: $header, emoji: true } },
+       { type: "section", text: { type: "mrkdwn", text: $body } },
+       { type: "divider" },
+       { type: "section", text: { type: "mrkdwn", text: ("*Изменения:*\n" + $summary) } },
        { type: "context", elements: [ { type: "mrkdwn", text: $ctx } ] }
      ]
    }')"
