@@ -1,0 +1,128 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+# Serialize deployments so overlapping merges don't race (FR-019).
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build-push:
+    name: Build & push images to Selectel CR
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read VERSION
+        id: version
+        run: echo "tag=$(tr -d ' \t\r\n' < VERSION)" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to Selectel CR
+        run: echo "${{ secrets.SELECTEL_CR_PASSWORD }}" | docker login "${{ vars.REGISTRY_HOST }}" -u "${{ secrets.SELECTEL_CR_USERNAME }}" --password-stdin
+
+      - name: Duplicate-tag guard
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          REPO="${{ vars.REGISTRY_HOST }}/${{ vars.REGISTRY_NAMESPACE }}/crm-backend"
+          if docker manifest inspect "$REPO:$TAG" >/dev/null 2>&1; then
+            echo "::error::Image tag $TAG already exists in the registry. Bump VERSION before merging."
+            exit 1
+          fi
+
+      - name: Build & push backend
+        run: |
+          IMG="${{ vars.REGISTRY_HOST }}/${{ vars.REGISTRY_NAMESPACE }}/crm-backend:${{ steps.version.outputs.tag }}"
+          docker build -t "$IMG" .
+          docker push "$IMG"
+
+      - name: Build & push frontend
+        run: |
+          IMG="${{ vars.REGISTRY_HOST }}/${{ vars.REGISTRY_NAMESPACE }}/crm-frontend:${{ steps.version.outputs.tag }}"
+          docker build -t "$IMG" ./client
+          docker push "$IMG"
+
+  deploy:
+    name: Deploy to VPS over SSH
+    needs: build-push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          printf '%s\n' "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      - name: Copy deploy files to VPS
+        env:
+          DEST: ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+        run: |
+          ssh -i ~/.ssh/id_deploy "$DEST" "mkdir -p '$DEPLOY_PATH/ci'"
+          scp -i ~/.ssh/id_deploy deploy/docker-compose.prod.yml deploy/Caddyfile "$DEST:$DEPLOY_PATH/"
+          scp -i ~/.ssh/id_deploy scripts/ci/deploy-remote.sh scripts/ci/healthcheck.sh scripts/ci/lib.sh "$DEST:$DEPLOY_PATH/ci/"
+
+      - name: Run remote deploy
+        env:
+          DEST: ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}
+        run: |
+          ssh -i ~/.ssh/id_deploy "$DEST" \
+            "IMAGE_TAG='${{ needs.build-push.outputs.image_tag }}' \
+             REGISTRY_HOST='${{ vars.REGISTRY_HOST }}' \
+             REGISTRY_NAMESPACE='${{ vars.REGISTRY_NAMESPACE }}' \
+             DOMAIN='${{ vars.DOMAIN }}' \
+             STAND_URL='${{ vars.STAND_URL }}' \
+             DEPLOY_PATH='${{ vars.DEPLOY_PATH }}' \
+             POSTGRES_USER='${{ secrets.POSTGRES_USER }}' \
+             POSTGRES_PASSWORD='${{ secrets.POSTGRES_PASSWORD }}' \
+             POSTGRES_DB='${{ secrets.POSTGRES_DB }}' \
+             SESSION_SECRET='${{ secrets.SESSION_SECRET }}' \
+             GOOGLE_CLIENT_ID='${{ secrets.GOOGLE_CLIENT_ID }}' \
+             GOOGLE_CLIENT_SECRET='${{ secrets.GOOGLE_CLIENT_SECRET }}' \
+             GOOGLE_CALLBACK_URL='${{ vars.GOOGLE_CALLBACK_URL }}' \
+             FRONTEND_URL='${{ vars.FRONTEND_URL }}' \
+             bash '${{ vars.DEPLOY_PATH }}/ci/deploy-remote.sh'"
+
+  notify:
+    name: Slack notification
+    needs: [build-push, deploy]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Summarize commits
+        id: summary
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        run: |
+          FILE="$(mktemp)"
+          bash scripts/ci/summarize-commits.sh > "$FILE" || true
+          echo "file=$FILE" >> "$GITHUB_OUTPUT"
+
+      - name: Notify Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          STATUS: ${{ needs.deploy.result }}
+          VERSION: ${{ needs.build-push.outputs.image_tag }}
+          STAND_URL: ${{ vars.STAND_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          COMMIT_RANGE: ${{ github.event.before }}..${{ github.sha }}
+        run: bash scripts/ci/notify-slack.sh "${{ steps.summary.outputs.file }}"
