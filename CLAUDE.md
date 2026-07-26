@@ -63,5 +63,5 @@
 Фронтенд: **React + Vite** (SPA) — зафиксировано в F-11.
 
 <!-- SPECKIT START -->
-**Active feature plan**: [specs/016-ci-cd-pipeline/plan.md](specs/016-ci-cd-pipeline/plan.md)
+**Active feature plan**: [specs/017-ui-fixes-deal-channel/plan.md](specs/017-ui-fixes-deal-channel/plan.md)
 <!-- SPECKIT END -->

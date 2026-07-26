@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { toast } from 'sonner'
-import { Loader2 } from 'lucide-react'
+import { Loader2, ExternalLink } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
 function formatDateDisplay(val) {
@@ -168,15 +168,19 @@ export default function InlineField({
             {value ? 'Yes' : 'No'}
           </span>
         ) : type === 'url' && readDisplay ? (
-          <a
-            href={readDisplay}
-            target="_blank"
-            rel="noreferrer"
-            className="text-primary hover:underline truncate"
-            onClick={(e) => !readOnly && e.stopPropagation()}
-          >
-            {readDisplay}
-          </a>
+          <>
+            <span className="text-foreground truncate">{readDisplay}</span>
+            <a
+              href={readDisplay}
+              target="_blank"
+              rel="noreferrer"
+              className="text-muted-foreground hover:text-primary flex-shrink-0"
+              onClick={(e) => e.stopPropagation()}
+              aria-label={`Open ${label} link`}
+            >
+              <ExternalLink size={12} />
+            </a>
+          </>
         ) : (
           <span className={readDisplay ? 'text-foreground' : 'text-muted-foreground italic'}>
             {readDisplay || placeholder}

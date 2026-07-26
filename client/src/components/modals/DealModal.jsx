@@ -31,6 +31,7 @@ const schema = z.object({
   description: z.string().optional(),
   our_services: z.array(z.string()).optional(),
   deal_storage: z.string().optional(),
+  deal_channel: z.string().optional(),
   currency: z.string().optional(),
   lost_reason: z.string().optional(),
 })
@@ -51,7 +52,7 @@ const emptyDefaults = {
   title: '', value: '', stage: 'lead', close_date: '', expected_start_date: '',
   account_id: '', owner_id: '', location: '', deal_type: '', source: '',
   project_domain: '', description: '', our_services: [],
-  deal_storage: '', currency: 'RUB', lost_reason: '',
+  deal_storage: '', deal_channel: '', currency: 'RUB', lost_reason: '',
 }
 
 export default function DealModal({ open, initial, onSave, onClose, loading }) {
@@ -93,6 +94,7 @@ export default function DealModal({ open, initial, onSave, onClose, loading }) {
       description: initial.description || '',
       our_services: initial.our_services || [],
       deal_storage: initial.deal_storage || '',
+      deal_channel: initial.deal_channel || '',
       currency: initial.currency || 'RUB',
       lost_reason: initial.lost_reason || '',
     } : emptyDefaults)
@@ -209,6 +211,10 @@ export default function DealModal({ open, initial, onSave, onClose, loading }) {
 
             <Field label="Storage URL" error={errors.deal_storage}>
               <input {...register('deal_storage')} type="url" className={inputClass} placeholder="https://drive.google.com/..." />
+            </Field>
+
+            <Field label="Deal Channel" error={errors.deal_channel}>
+              <input {...register('deal_channel')} type="url" className={inputClass} placeholder="https://t.me/..." />
             </Field>
 
             <div className="flex justify-end gap-3 pt-2">

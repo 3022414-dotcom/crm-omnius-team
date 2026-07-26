@@ -5,7 +5,7 @@ const pool = require('../db/pool');
 const VALID_STAGES = ['lead', 'qualifying', 'discovery', 'proposal', 'closing', 'contract', 'won', 'lost'];
 const UPDATABLE_FIELDS = ['title', 'value', 'close_date', 'account_id', 'stage', 'owner_id',
   'location', 'deal_type', 'source', 'project_domain', 'description', 'our_services',
-  'deal_storage', 'expected_start_date', 'currency', 'lost_reason'];
+  'deal_storage', 'deal_channel', 'expected_start_date', 'currency', 'lost_reason'];
 
 async function createDeal(req, res) {
   const title = req.body.title?.trim();
@@ -26,13 +26,13 @@ async function createDeal(req, res) {
   const { rows: [deal] } = await pool.query(
     `INSERT INTO deals (title, value, stage, close_date, account_id, owner_id,
                         location, deal_type, source, project_domain, description, our_services,
-                        deal_storage, expected_start_date, currency, lost_reason, created_by_id)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+                        deal_storage, deal_channel, expected_start_date, currency, lost_reason, created_by_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
      RETURNING *`,
     [title, req.body.value || null, stage, req.body.close_date || null, account_id, req.user.id,
      req.body.location || null, req.body.deal_type || null, req.body.source || null,
      req.body.project_domain || null, req.body.description || null,
-     req.body.our_services || null, req.body.deal_storage || null,
+     req.body.our_services || null, req.body.deal_storage || null, req.body.deal_channel || null,
      req.body.expected_start_date || null, req.body.currency || 'RUB',
      req.body.lost_reason || null, req.user.id]
   );
@@ -113,7 +113,7 @@ async function getDealById(req, res) {
   const { rows: [row] } = await pool.query(
     `SELECT d.id, d.title, d.value, d.stage, d.close_date, d.expected_start_date,
             d.location, d.deal_type, d.source, d.project_domain, d.description,
-            d.our_services, d.deal_storage, d.currency, d.lost_reason,
+            d.our_services, d.deal_storage, d.deal_channel, d.currency, d.lost_reason,
             d.account_id, d.owner_id, d.created_at, d.updated_at,
             a.name AS account_name,
             u.name AS owner_name,
@@ -149,6 +149,7 @@ async function getDealById(req, res) {
     description: row.description,
     our_services: row.our_services,
     deal_storage: row.deal_storage,
+    deal_channel: row.deal_channel,
     currency: row.currency,
     lost_reason: row.lost_reason,
     account_id: row.account_id,
@@ -203,7 +204,7 @@ async function updateDeal(req, res) {
   const { rows: [row] } = await pool.query(
     `SELECT d.id, d.title, d.value, d.stage, d.close_date, d.expected_start_date,
             d.location, d.deal_type, d.source, d.project_domain, d.description,
-            d.our_services, d.deal_storage, d.currency, d.lost_reason,
+            d.our_services, d.deal_storage, d.deal_channel, d.currency, d.lost_reason,
             d.account_id, d.owner_id, d.created_at, d.updated_at,
             a.name AS account_name,
             u.name AS owner_name,
@@ -231,6 +232,7 @@ async function updateDeal(req, res) {
     description: row.description,
     our_services: row.our_services,
     deal_storage: row.deal_storage,
+    deal_channel: row.deal_channel,
     currency: row.currency,
     lost_reason: row.lost_reason,
     account_id: row.account_id,
