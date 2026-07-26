@@ -10,6 +10,13 @@ import { formatDistanceToNow } from '../../lib/date'
 
 const SUPPORTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 const MAX_IMAGE_SIZE = 50 * 1024 * 1024
+const MAX_TEXTAREA_HEIGHT = 240 // ~10 lines
+
+function autoGrow(el) {
+  if (!el) return
+  el.style.height = 'auto'
+  el.style.height = Math.min(el.scrollHeight, MAX_TEXTAREA_HEIGHT) + 'px'
+}
 
 function renderNoteContent(content) {
   const regex = /!\[([^\]]*)\]\(([^)]+)\)/g
@@ -139,11 +146,13 @@ export default function NotesTab({ entityType, entityId }) {
       {canWrite && (
         <div className="space-y-2">
           <textarea
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-primary"
+            ref={autoGrow}
+            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-primary overflow-y-auto"
+            style={{ maxHeight: MAX_TEXTAREA_HEIGHT }}
             rows={3}
             placeholder="Добавить заметку..."
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => { setText(e.target.value); autoGrow(e.target) }}
             onPaste={handlePaste(setText)}
           />
           <ThumbnailStrip pendingImages={pendingImages} />
@@ -166,10 +175,12 @@ export default function NotesTab({ entityType, entityId }) {
             {editId === note.id ? (
               <div className="space-y-2">
                 <textarea
-                  className="w-full rounded border border-border bg-background px-2 py-1 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-primary"
+                  ref={autoGrow}
+                  className="w-full rounded border border-border bg-background px-2 py-1 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-primary overflow-y-auto"
+                  style={{ maxHeight: MAX_TEXTAREA_HEIGHT }}
                   rows={3}
                   value={editText}
-                  onChange={(e) => setEditText(e.target.value)}
+                  onChange={(e) => { setEditText(e.target.value); autoGrow(e.target) }}
                   onPaste={handlePaste(setEditText)}
                 />
                 <ThumbnailStrip pendingImages={pendingImages} />

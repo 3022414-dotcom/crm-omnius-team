@@ -251,6 +251,7 @@ export default function DealDetailPage() {
       />
       <InlineField label="Currency" value={deal.currency} type="select" options={CURRENCIES} readOnly={!canWrite} onSave={field('currency')} />
       <InlineField label="Storage URL" value={deal.deal_storage} type="url" readOnly={!canWrite} onSave={field('deal_storage')} />
+      <InlineField label="Deal Channel" value={deal.deal_channel} type="url" readOnly={!canWrite} onSave={field('deal_channel')} />
       <InlineField
         label="Deal Owner"
         value={deal.owner_id ?? ''}
